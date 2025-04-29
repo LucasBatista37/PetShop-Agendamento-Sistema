@@ -54,7 +54,7 @@ export default function Sidebar() {
             </li>
             <li>
               <NavLink
-                to="/pets"
+                to="/services"
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100 ${
                     isActive ? "bg-indigo-100 font-medium" : ""
