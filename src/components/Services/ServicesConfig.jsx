@@ -1,64 +1,65 @@
-import React, { useState } from 'react'
-import {
-  FaPlus,
-  FaEdit,
-  FaTrash,
-} from 'react-icons/fa'
-import NewServiceModal from './NewServiceModal'
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { FaPlus, FaTrash } from "react-icons/fa";
+import EditServiceModal from "./EditServiceModal";
 
 const mockServices = [
   {
     id: 1,
-    name: 'Banho Simples',
+    name: "Banho Simples",
     price: 70,
-    duration: 40,               
-    description: 'Lavagem completa com shampoo neutro e secagem.'
+    duration: 40,
+    description: "Lavagem completa com shampoo neutro e secagem."
   },
   {
     id: 2,
-    name: 'Banho + Tosa higiênica',
+    name: "Banho + Tosa higiênica",
     price: 90,
     duration: 60,
-    description: 'Banho e tosa na região íntima, patas e focinho.'
+    description: "Banho e tosa na região íntima, patas e focinho."
   },
   {
     id: 3,
-    name: 'Banho + Tosa completa',
+    name: "Banho + Tosa completa",
     price: 120,
     duration: 90,
-    description: 'Banho, secagem e tosa do corpo inteiro conforme padrão da raça.'
-  },
-]
+    description:
+      "Banho, secagem e tosa do corpo inteiro conforme padrão da raça."
+  }
+];
 
 export default function ServicesConfig() {
-  const [services, setServices] = useState(mockServices)
-  const [modalData, setModalData] = useState(null)  
+  const [services, setServices] = useState(() => {
+    const stored = localStorage.getItem("services");
+    return stored ? JSON.parse(stored) : mockServices;
+  });
 
-  const handleSave = (service) => {
-    if (modalData) {
-      setServices(prev => prev.map(s => (s.id === service.id ? service : s)))
-    } else {
-      const id = Math.max(...services.map(s => s.id)) + 1
-      setServices(prev => [...prev, { ...service, id }])
-    }
-    setModalData(null)
-  }
+  const [editData, setEditData] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem("services", JSON.stringify(services));
+  }, [services]);
 
   const handleDelete = (id) =>
-    window.confirm('Excluir este serviço?') &&
-    setServices(prev => prev.filter(s => s.id !== id))
+    window.confirm("Excluir este serviço?") &&
+    setServices((prev) => prev.filter((s) => s.id !== id));
+
+  const handleSaveEdit = (updated) => {
+    setServices((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
+    setEditData(null);
+  };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-screen relative z-0">
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-semibold text-gray-800">Serviços</h1>
 
-        <button
-          onClick={() => setModalData(null)}
+        <Link
+          to="/services/new"
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
         >
           <FaPlus /> Novo Serviço
-        </button>
+        </Link>
       </header>
 
       {services.length === 0 ? (
@@ -69,52 +70,56 @@ export default function ServicesConfig() {
             <ServiceCard
               key={s.id}
               service={s}
-              onEdit={() => setModalData(s)}
               onDelete={() => handleDelete(s.id)}
+              onEdit={() => setEditData(s)}
             />
           ))}
         </div>
       )}
 
-      <NewServiceModal
-        isOpen={modalData !== null}
-        initialData={modalData}
-        onClose={() => setModalData(null)}
-        onSave={handleSave}
-      />
+      {editData && (
+        <EditServiceModal
+          service={editData}
+          onClose={() => setEditData(null)}
+          onSave={handleSaveEdit}
+        />
+      )}
     </div>
-  )
+  );
 }
 
-function ServiceCard({ service, onEdit, onDelete }) {
+function ServiceCard({ service, onDelete, onEdit }) {
   return (
     <div className="bg-white border rounded-lg shadow-sm p-4 flex flex-col justify-between">
       <div>
         <h3 className="text-lg font-semibold text-gray-800">{service.name}</h3>
-        <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">{service.description}</p>
+        <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">
+          {service.description}
+        </p>
       </div>
 
       <div className="mt-4 flex items-center justify-between">
         <span className="font-semibold text-indigo-600">
           R$ {service.price.toFixed(2)}
         </span>
-        <div className="flex gap-3 text-sm">
+
+        <div className="flex items-center gap-2">
           <button
-            onClick={onEdit}
-            className="text-blue-600 hover:text-blue-800"
             title="Editar"
+            onClick={onEdit}
+            className="text-indigo-500 hover:text-indigo-700 text-sm"
           >
-            <FaEdit />
+            ✏️
           </button>
           <button
-            onClick={onDelete}
-            className="text-red-500 hover:text-red-700"
             title="Excluir"
+            onClick={onDelete}
+            className="text-red-500 hover:text-red-700 text-sm"
           >
             <FaTrash />
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }

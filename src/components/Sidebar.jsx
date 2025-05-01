@@ -2,12 +2,7 @@ import {
   FaHome,
   FaCalendarAlt,
   FaDog,
-  FaBoxOpen,
-  FaFileInvoiceDollar,
-  FaChartLine,
-  FaBolt,
   FaCog,
-  FaShieldAlt,
   FaQuestionCircle,
   FaSignOutAlt,
 } from "react-icons/fa";
@@ -62,54 +57,7 @@ export default function Sidebar() {
                 }
               >
                 <FaDog className="w-5 h-5" />
-                Pets
-              </NavLink>
-            </li>
-          </ul>
-        </div>
-
-        <div className="mb-6">
-          <p className="mb-2 px-2 text-xs font-semibold text-gray-500 uppercase">
-            Tools
-          </p>
-          <ul className="space-y-1">
-            <li>
-              <NavLink
-                to="/product"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100"
-              >
-                <FaBoxOpen className="w-5 h-5" />
-                Produto
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/invoice"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100"
-              >
-                <FaFileInvoiceDollar className="w-5 h-5" />
-                Faturas
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/analytics"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100"
-              >
-                <FaChartLine className="w-5 h-5" />
-                Analytics
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/automation"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100"
-              >
-                <FaBolt className="w-5 h-5" />
-                Automação{" "}
-                <span className="ml-auto text-xs bg-indigo-200 text-indigo-800 px-1 rounded">
-                  Beta
-                </span>
+                Servicos
               </NavLink>
             </li>
           </ul>
@@ -131,15 +79,6 @@ export default function Sidebar() {
             </li>
             <li>
               <NavLink
-                to="/security"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100"
-              >
-                <FaShieldAlt className="w-5 h-5" />
-                Segurança
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
                 to="/help"
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100"
               >
@@ -151,13 +90,6 @@ export default function Sidebar() {
         </div>
       </nav>
 
-      <div className="mx-4 mb-6 p-4 bg-indigo-50 rounded-lg text-center">
-        <p className="text-sm text-indigo-700 mb-2">Use nosso plano Pro!</p>
-        <button className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-          Upgrade
-        </button>
-      </div>
-
       <div className="px-4 pb-6">
         <div className="flex items-center gap-3 mb-4">
           <img
@@ -166,8 +98,8 @@ export default function Sidebar() {
             className="w-10 h-10 rounded-full object-cover"
           />
           <div>
-            <p className="text-sm font-medium">Rafael Almeida</p>
-            <p className="text-xs text-gray-500">@raphael.k.business</p>
+            <p className="text-sm font-medium">Lucas Batista</p>
+            <p className="text-xs text-gray-500">lucas.batista@gmail.com</p>
           </div>
         </div>
         <button className="flex items-center gap-3 text-red-500 hover:bg-red-100 px-3 py-2 rounded-lg w-full">
