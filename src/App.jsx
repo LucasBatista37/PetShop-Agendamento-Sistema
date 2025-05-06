@@ -9,13 +9,15 @@ import Dashboard from "./components/Dashboard";
 import Appointments from "./components/Appointments/Appointments";
 import AddService from "./components/Services/AddService";
 import ServicesConfig from "./components/Services/ServicesConfig";
-import Login from "./pages/Login";          
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 function App() {
   return (
     <Routes>
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Route>
 
       <Route element={<MainLayout />}>

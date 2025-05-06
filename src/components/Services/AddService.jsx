@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function AddService() {
   const navigate = useNavigate();
@@ -9,40 +10,81 @@ export default function AddService() {
     price: "",
     duration: "",
     description: "",
+    extra: false,
   });
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm({
+      ...form,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const { name, price, duration, description } = form;
+    setError("");
 
+    const { name, price, duration } = form;
     if (!name || !price || !duration) {
-      alert("Preencha todos os campos obrigatórios!");
+      setError("Preencha todos os campos obrigatórios!");
       return;
     }
 
-    const stored = JSON.parse(localStorage.getItem("services") || "[]");
-    stored.push({
-      id: Date.now(),
-      name,
-      price: parseFloat(price),
-      duration: parseInt(duration, 10),
-      description,
-    });
-    localStorage.setItem("services", JSON.stringify(stored));
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("Você precisa estar logado para adicionar serviços.");
+      return;
+    }
 
-    navigate("/services", { replace: true });
+    setLoading(true);
+    try {
+      await axios.post(
+        "http://localhost:5000/api/services",
+        {
+          name: form.name,
+          description: form.description,
+          price: parseFloat(form.price),
+          duration: parseInt(form.duration, 10),
+          extra: form.extra,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      navigate("/services", { replace: true });
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.response?.data?.message ||
+          "Erro ao adicionar serviço. Tente novamente."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen flex flex-col items-center">
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Adicionar Novo Serviço</h2>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+          Adicionar Novo Serviço
+        </h2>
+
+        {error && (
+          <div className="mb-4 text-red-600 bg-red-100 p-2 rounded">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Nome */}
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Nome do Serviço *
@@ -58,10 +100,11 @@ export default function AddService() {
             />
           </div>
 
-          {/* Preço & Duração */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Preço (R$) *</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Preço (R$) *
+              </label>
               <input
                 type="number"
                 name="price"
@@ -73,7 +116,9 @@ export default function AddService() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Duração (min) *</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Duração (min) *
+              </label>
               <input
                 type="number"
                 name="duration"
@@ -87,7 +132,9 @@ export default function AddService() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Descrição</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Descrição
+            </label>
             <textarea
               name="description"
               value={form.description}
@@ -98,7 +145,20 @@ export default function AddService() {
             />
           </div>
 
-          {/* Ações */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              name="extra"
+              checked={form.extra}
+              onChange={handleChange}
+              id="extra"
+              className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+            />
+            <label htmlFor="extra" className="ml-2 block text-sm text-gray-700">
+              É um serviço extra?
+            </label>
+          </div>
+
           <div className="flex justify-end gap-4">
             <button
               type="button"
@@ -109,9 +169,14 @@ export default function AddService() {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+              disabled={loading}
+              className={`px-4 py-2 rounded-md text-white ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
             >
-              Salvar
+              {loading ? "Salvando..." : "Salvar"}
             </button>
           </div>
         </form>

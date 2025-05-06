@@ -1,59 +1,64 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import EditServiceModal from "./EditServiceModal";
 
-const mockServices = [
-  {
-    id: 1,
-    name: "Banho Simples",
-    price: 70,
-    duration: 40,
-    description: "Lavagem completa com shampoo neutro e secagem."
-  },
-  {
-    id: 2,
-    name: "Banho + Tosa higiênica",
-    price: 90,
-    duration: 60,
-    description: "Banho e tosa na região íntima, patas e focinho."
-  },
-  {
-    id: 3,
-    name: "Banho + Tosa completa",
-    price: 120,
-    duration: 90,
-    description:
-      "Banho, secagem e tosa do corpo inteiro conforme padrão da raça."
-  }
-];
-
 export default function ServicesConfig() {
-  const [services, setServices] = useState(() => {
-    const stored = localStorage.getItem("services");
-    return stored ? JSON.parse(stored) : mockServices;
-  });
-
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [editData, setEditData] = useState(null);
 
+  const token = localStorage.getItem("token");
+  const api = axios.create({
+    baseURL: "http://localhost:5000/api/services",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
   useEffect(() => {
-    localStorage.setItem("services", JSON.stringify(services));
-  }, [services]);
+    const fetchServices = async () => {
+      try {
+        const res = await api.get("/");
+        setServices(res.data);
+      } catch (err) {
+        setError("Erro ao carregar serviços");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchServices();
+  }, []);
 
-  const handleDelete = (id) =>
-    window.confirm("Excluir este serviço?") &&
-    setServices((prev) => prev.filter((s) => s.id !== id));
-
-  const handleSaveEdit = (updated) => {
-    setServices((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-    setEditData(null);
+  const handleDelete = async (id) => {
+    if (!window.confirm("Excluir este serviço?")) return;
+    try {
+      await api.delete(`/${id}`);
+      setServices((prev) => prev.filter((s) => s._id !== id));
+    } catch (err) {
+      alert("Erro ao excluir serviço");
+    }
   };
 
+  const handleSaveEdit = async (updated) => {
+    try {
+      const res = await api.put(`/${updated._id}`, updated);
+      setServices((prev) =>
+        prev.map((s) => (s._id === updated._id ? res.data : s))
+      );
+      setEditData(null);
+    } catch (err) {
+      alert("Erro ao atualizar serviço");
+    }
+  };
+
+  if (loading) return <p className="p-6">Carregando...</p>;
+  if (error) return <p className="p-6 text-red-600">{error}</p>;
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen relative z-0">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-semibold text-gray-800">Serviços</h1>
-
         <Link
           to="/services/new"
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
@@ -68,9 +73,9 @@ export default function ServicesConfig() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {services.map((s) => (
             <ServiceCard
-              key={s.id}
+              key={s._id}
               service={s}
-              onDelete={() => handleDelete(s.id)}
+              onDelete={() => handleDelete(s._id)}
               onEdit={() => setEditData(s)}
             />
           ))}
@@ -97,12 +102,10 @@ function ServiceCard({ service, onDelete, onEdit }) {
           {service.description}
         </p>
       </div>
-
       <div className="mt-4 flex items-center justify-between">
         <span className="font-semibold text-indigo-600">
           R$ {service.price.toFixed(2)}
         </span>
-
         <div className="flex items-center gap-2">
           <button
             title="Editar"

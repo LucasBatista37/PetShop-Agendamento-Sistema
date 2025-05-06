@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -7,18 +7,18 @@ export default function EditServiceModal({ service, onClose, onSave }) {
 
   useEffect(() => setForm(service), [service]);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const { name, price, duration } = form;
-
     if (!name || !price || !duration) {
       alert("Preencha todos os campos obrigatórios!");
       return;
     }
-
     onSave({
       ...form,
       price: parseFloat(price),
@@ -26,17 +26,15 @@ export default function EditServiceModal({ service, onClose, onSave }) {
     });
   };
 
-  const modal = (
+  return createPortal(
     <AnimatePresence>
       <motion.div
-        key="backdrop"
         className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
         <motion.div
-          key="content"
           className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg"
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -46,9 +44,7 @@ export default function EditServiceModal({ service, onClose, onSave }) {
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             Editar Serviço
           </h2>
-
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Nome */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Nome *
@@ -61,8 +57,6 @@ export default function EditServiceModal({ service, onClose, onSave }) {
                 required
               />
             </div>
-
-            {/* Preço / Duração */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
@@ -91,21 +85,28 @@ export default function EditServiceModal({ service, onClose, onSave }) {
                 />
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Descrição
               </label>
               <textarea
                 name="description"
+                rows={3}
                 value={form.description}
                 onChange={handleChange}
-                rows={3}
                 className="w-full border rounded-md p-2"
               />
             </div>
-
-            {/* Botões */}
+            <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                name="extra"
+                checked={form.extra}
+                onChange={handleChange}
+                className="rounded border-gray-300"
+              />
+              Serviço extra?
+            </label>
             <div className="flex justify-end gap-2">
               <button
                 type="button"
@@ -124,8 +125,7 @@ export default function EditServiceModal({ service, onClose, onSave }) {
           </form>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
-
-  return createPortal(modal, document.body);
 }
