@@ -1,46 +1,65 @@
-import React from 'react'
-
-const bases = [
-  'Banho Simples',
-  'Banho + Tosa higiênica',
-  'Banho + Tosa completa',
-]
-const extras = ['Cortar unha', 'Limpar ouvidos', 'Hidratação']
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function StepService({ data, onChange }) {
-  const toggleExtra = (e) =>
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/api/services", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setServices(res.data);
+      setLoading(false);
+    };
+    fetch();
+  }, []);
+
+  const bases = services.filter((s) => !s.extra);
+  const extras = services.filter((s) => s.extra);
+
+  const toggleExtra = (id) => {
+    const isSelected = data.extras.some((e) => e._id === id);
+    const updatedExtras = isSelected
+      ? data.extras.filter((e) => e._id !== id)
+      : [...data.extras, extras.find((e) => e._id === id)];
+
     onChange({
       ...data,
-      extras: data.extras.includes(e)
-        ? data.extras.filter(x => x !== e)
-        : [...data.extras, e],
-    })
+      extras: updatedExtras,
+    });
+  };
+
+  if (loading) return <p>Carregando serviços...</p>;
 
   return (
     <div className="space-y-4">
       <h3 className="font-medium">Serviço Base</h3>
-      {bases.map(b => (
-        <label key={b} className="flex items-center gap-2">
+      {bases.map((b) => (
+        <label key={b._id} className="flex items-center gap-2">
           <input
             type="radio"
-            checked={data.base === b}
+            name="baseService"
+            checked={data.base?._id === b._id}
             onChange={() => onChange({ ...data, base: b })}
           />
-          {b}
+          {b.name}
         </label>
       ))}
 
       <h3 className="font-medium pt-4">Extras</h3>
-      {extras.map(e => (
-        <label key={e} className="flex items-center gap-2">
+      {extras.map((e) => (
+        <label key={e._id} className="flex items-center gap-2">
           <input
             type="checkbox"
-            checked={data.extras.includes(e)}
-            onChange={() => toggleExtra(e)}
+            checked={data.extras.some((x) => x._id === e._id)}
+            onChange={() => toggleExtra(e._id)}
           />
-          {e}
+          {e.name}
         </label>
       ))}
     </div>
-  )
+  );
 }
