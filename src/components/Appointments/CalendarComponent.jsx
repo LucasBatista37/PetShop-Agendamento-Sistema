@@ -1,36 +1,72 @@
-import React, { useState } from 'react'
-import { Calendar, Views, Navigate } from 'react-big-calendar'
-import { ptBR } from 'date-fns/locale'
-import { format } from 'date-fns'
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
-import AppointmentDetails from './AppointmentDetails'
-import 'react-big-calendar/lib/css/react-big-calendar.css'
+import React, { useState } from "react";
+import { Calendar, Views, dateFnsLocalizer } from "react-big-calendar";
+import { format, parse, startOfWeek, getDay } from "date-fns";
+import ptBR from "date-fns/locale/pt-BR";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import AppointmentDetails from "./AppointmentDetails";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+
+const locales = { "pt-BR": ptBR };
+const localizer = dateFnsLocalizer({
+  format,
+  parse: (value, formatStr) =>
+    parse(value, formatStr, new Date(), { locale: ptBR }),
+  startOfWeek: (date) => startOfWeek(date, { locale: ptBR }),
+  getDay,
+  locales,
+});
+
+const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const ToolbarBtn = ({ children, onClick, primary, active }) => {
+  let base =
+    "px-3 py-1.5 rounded text-sm flex items-center gap-1 transition-colors";
+  if (primary)
+    base +=
+      " bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm font-medium";
+  else if (active)
+    base +=
+      " bg-indigo-100 text-indigo-700 font-medium border border-indigo-200";
+  else base += " bg-white text-gray-700 hover:bg-gray-100 border";
+
+  return (
+    <button
+      onClick={onClick}
+      className={base}
+      aria-label={typeof children === "string" ? children : undefined}
+    >
+      {children}
+    </button>
+  );
+};
 
 const CustomToolbar = ({ label, onNavigate, onView, view }) => {
   const views = [
-    { label: 'Mês', value: Views.MONTH },
-    { label: 'Semana', value: Views.WEEK },
-    { label: 'Dia', value: Views.DAY },
-  ]
+    { label: "Mês", value: Views.MONTH },
+    { label: "Semana", value: Views.WEEK },
+    { label: "Dia", value: Views.DAY },
+  ];
 
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between p-4 bg-gray-50 border-b gap-4">
       <div className="flex items-center gap-2">
-        <ToolbarBtn onClick={() => onNavigate(Navigate.TODAY)} primary>
+        <ToolbarBtn onClick={() => onNavigate("TODAY")} primary>
           Hoje
         </ToolbarBtn>
-        <ToolbarBtn onClick={() => onNavigate(Navigate.PREV)}>
+        <ToolbarBtn onClick={() => onNavigate("PREV")}>
           <FaChevronLeft /> Anterior
         </ToolbarBtn>
-        <ToolbarBtn onClick={() => onNavigate(Navigate.NEXT)}>
+        <ToolbarBtn onClick={() => onNavigate("NEXT")}>
           Próximo <FaChevronRight />
         </ToolbarBtn>
       </div>
 
-      <h3 className="text-lg font-semibold text-gray-800 text-center">{label}</h3>
+      <h3 className="text-lg font-semibold text-gray-800 text-center">
+        {label}
+      </h3>
 
       <div className="flex gap-2">
-        {views.map(v => (
+        {views.map((v) => (
           <ToolbarBtn
             key={v.value}
             active={view === v.value}
@@ -41,45 +77,27 @@ const CustomToolbar = ({ label, onNavigate, onView, view }) => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-const ToolbarBtn = ({ children, onClick, primary, active }) => {
-  let base =
-    'px-3 py-1.5 rounded text-sm flex items-center gap-1 transition-colors'
-  if (primary)
-    base +=
-      ' bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm font-medium'
-  else if (active)
-    base +=
-      ' bg-indigo-100 text-indigo-700 font-medium border border-indigo-200'
-  else base += ' bg-white text-gray-700 hover:bg-gray-100 border'
+export default function CalendarComponent({ events, onFinalize }) {
+  const [currentView, setCurrentView] = useState(Views.MONTH);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selected, setSelected] = useState(null);
 
-  return (
-    <button onClick={onClick} className={base}>
-      {children}
-    </button>
-  )
-}
-
-export default function CalendarComponent({ localizer, events }) {
-  const [currentView, setCurrentView] = useState(Views.MONTH)
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [selected, setSelected] = useState(null)
-
-  const eventStyleGetter = event => ({
+  const eventStyleGetter = (event) => ({
     style: {
       backgroundColor:
         {
-          Confirmado: '#34D399',
-          Pendente: '#FBBF24',
-          Cancelado: '#F87171',
-        }[event.status] || '#6B7280',
+          Confirmado: "#34D399",
+          Pendente: "#FBBF24",
+          Cancelado: "#F87171",
+        }[event.status] || "#6B7280",
       borderRadius: 6,
-      color: '#fff',
-      padding: '0 6px',
+      color: "#fff",
+      padding: "0 6px",
     },
-  })
+  });
 
   return (
     <div className="bg-white shadow-sm rounded-lg p-4">
@@ -106,28 +124,45 @@ export default function CalendarComponent({ localizer, events }) {
           style={{ height: 600 }}
           components={{ toolbar: CustomToolbar }}
           messages={{
-            today: 'Hoje',
-            previous: 'Anterior',
-            next: 'Próximo',
-            month: 'Mês',
-            week: 'Semana',
-            day: 'Dia',
-            agenda: 'Agenda',
-            date: 'Data',
-            time: 'Hora',
-            event: 'Evento',
-            noEventsInRange: 'Nenhum agendamento neste período.',
-            showMore: total => `+${total} mais`,
+            today: "Hoje",
+            previous: "Anterior",
+            next: "Próximo",
+            month: "Mês",
+            week: "Semana",
+            day: "Dia",
+            agenda: "Agenda",
+            date: "Data",
+            time: "Hora",
+            event: "Evento",
+            noEventsInRange: "Nenhum agendamento neste período.",
+            showMore: (total) => `+${total} mais`,
           }}
-          dayLayoutAlgorithm="no-overlap"
           formats={{
-            dayHeaderFormat: (date, _, __, ___) =>
-              format(date, 'EEEE, dd/MM', { locale: ptBR }),
-            dayRangeHeaderFormat: (range, _, __, ___) =>
-              `${format(range.start, 'dd/MM', { locale: ptBR })} — ${format(
-                range.end,
-                'dd/MM',
-                { locale: ptBR },
+            dateFormat: "dd",
+            dayFormat: (date) => format(date, "dd/MM", { locale: ptBR }),
+            weekdayFormat: (date) =>
+              capitalize(format(date, "EEEE", { locale: ptBR })),
+            monthHeaderFormat: (date) =>
+              capitalize(format(date, "MMMM yyyy", { locale: ptBR })),
+            dayHeaderFormat: (date) =>
+              capitalize(format(date, "EEEE, dd MMMM", { locale: ptBR })),
+            dayRangeHeaderFormat: ({ start, end }) =>
+              `${capitalize(
+                format(start, "dd MMMM", { locale: ptBR })
+              )} — ${capitalize(format(end, "dd MMMM", { locale: ptBR }))}`,
+            agendaHeaderFormat: ({ start, end }) =>
+              `${format(start, "dd/MM/yyyy", { locale: ptBR })} - ${format(
+                end,
+                "dd/MM/yyyy",
+                { locale: ptBR }
+              )}`,
+            agendaDateFormat: (date) => format(date, "dd/MM", { locale: ptBR }),
+            agendaTimeFormat: (date) => format(date, "HH:mm", { locale: ptBR }),
+            agendaTimeRangeFormat: ({ start, end }) =>
+              `${format(start, "HH:mm", { locale: ptBR })} - ${format(
+                end,
+                "HH:mm",
+                { locale: ptBR }
               )}`,
           }}
         />
@@ -137,7 +172,8 @@ export default function CalendarComponent({ localizer, events }) {
         open={!!selected}
         data={selected}
         onClose={() => setSelected(null)}
+        onFinalize={onFinalize}
       />
     </div>
-  )
+  );
 }

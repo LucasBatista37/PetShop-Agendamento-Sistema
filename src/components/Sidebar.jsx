@@ -57,7 +57,7 @@ export default function Sidebar() {
                 }
               >
                 <FaDog className="w-5 h-5" />
-                Servicos
+                Serviços
               </NavLink>
             </li>
           </ul>
