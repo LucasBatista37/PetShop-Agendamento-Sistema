@@ -18,6 +18,7 @@ const localizer = dateFnsLocalizer({
 });
 
 export default function Appointments() {
+  const finalizeAppointment = (id) => patchStatus(id, "Finalizado");
   const token = localStorage.getItem("token");
   const api = axios.create({
     baseURL: "http://localhost:5000/api/appointments",
@@ -180,7 +181,11 @@ export default function Appointments() {
           onCancel={(id) => patchStatus(id, "Cancelado")}
         />
       ) : (
-        <CalendarComponent localizer={localizer} events={events} />
+        <CalendarComponent
+          localizer={localizer}
+          events={events}
+          onFinalize={finalizeAppointment}
+        />
       )}
 
       <NewAppointmentModal

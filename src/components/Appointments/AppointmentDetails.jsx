@@ -1,50 +1,57 @@
 import React from "react";
 import { Dialog } from "@headlessui/react";
-import {
-  FaPhoneAlt,
-  FaTimes,
-  FaWhatsapp,
-  FaEnvelope,
-  FaSms,
-  FaCheckCircle,
-} from "react-icons/fa";
+import { FaTimes, FaWhatsapp, FaCheckCircle } from "react-icons/fa";
+import { format, parseISO } from "date-fns";
+import ptBR from "date-fns/locale/pt-BR";
 
-export default function AppointmentDetails({ open, onClose, data }) {
+export default function AppointmentDetails({
+  open,
+  onClose,
+  data,
+  onFinalize, 
+}) {
   if (!data) return null;
 
   const {
+    _id,
     petName,
-    ownerName,
-    phone,
-    species = "",
-    breed = "",
-    service,
-    extras = [],
-    price,
-    status,
+    species,
+    breed,
+    size,
     notes,
+    price,
+    ownerName,
+    ownerPhone,
+    baseService,
+    extraServices = [],
     date,
     time,
+    status,
   } = data;
 
-  const statusInfo = {
-    Confirmado: {
-      bg: "bg-emerald-100",
-      text: "text-emerald-600",
-      label: "Confirmado",
-    },
-    Pendente: { bg: "bg-amber-100", text: "text-amber-600", label: "Pendente" },
-    Cancelado: { bg: "bg-rose-100", text: "text-rose-600", label: "Cancelado" },
-  }[status] || { bg: "bg-gray-100", text: "text-gray-600", label: status };
+  const statusInfo = {}[status] || {};
+
+  const formatDate = (iso) => {
+    try {
+      return format(parseISO(iso), "dd/MM/yyyy", { locale: ptBR });
+    } catch {
+      return iso;
+    }
+  };
+
+  const phoneDigits = ownerPhone.replace(/\D/g, "");
+  const whatsappNumber = phoneDigits.startsWith("55")
+    ? phoneDigits
+    : `55${phoneDigits}`;
 
   return (
     <Dialog open={open} onClose={onClose} className="fixed inset-0 z-50 flex">
       <div className="fixed inset-0 bg-black/40 z-40" aria-hidden="true" />
 
       <Dialog.Panel className="relative z-50 ml-auto w-full max-w-md h-full bg-white flex flex-col shadow-2xl">
-        <header className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-white/95 backdrop-blur border-b">
+        <header className="sticky top-0 flex items-center justify-between px-6 py-4 bg-white/95 border-b">
           <div>
-            <h3 className="text-base font-semibold text-gray-800">
+            <h3 className="font-semibold text-gray-800">
               {formatDate(date)} • {time}
             </h3>
             <span
@@ -55,36 +62,41 @@ export default function AppointmentDetails({ open, onClose, data }) {
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700"
+            className="p-2 rounded hover:bg-gray-100 text-gray-500"
+            aria-label="Fechar detalhes"
           >
             <FaTimes />
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 p-6 space-y-6 text-sm">
-          <Section title="Informações do pet">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm">
+          <Section title="Informações do Pet">
             <Item
               icon="🐾"
               label={`${petName} (${species}${breed ? `, ${breed}` : ""})`}
             />
+            <Item icon="📏" label={`Tamanho: ${size}`} />
+          </Section>
+
+          <Section title="Informações do Dono">
             <Item icon="👤" label={ownerName} />
-            <Item icon={<FaPhoneAlt />} label={phone} />
+            <Item icon={<FaWhatsapp />} label={ownerPhone} />
           </Section>
 
           <Section title="Serviço">
             <span
               className={`inline-block px-2 py-1 rounded ${statusInfo.bg} ${statusInfo.text}`}
             >
-              {service}
+              {baseService?.name || "—"}
             </span>
-            {extras?.length > 0 && (
+            {extraServices.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
-                {extras.map((e) => (
+                {extraServices.map((e) => (
                   <span
-                    key={e}
+                    key={e._id || e}
                     className="bg-orange-100 text-orange-600 px-2 py-0.5 rounded text-xs"
                   >
-                    {e}
+                    {e.name || e}
                   </span>
                 ))}
               </div>
@@ -93,39 +105,39 @@ export default function AppointmentDetails({ open, onClose, data }) {
 
           {notes && (
             <Section title="Observações">
-              <p className="text-gray-700 whitespace-pre-wrap">{notes}</p>
+              <p className="whitespace-pre-wrap text-gray-700">{notes}</p>
             </Section>
           )}
 
           <p className="text-right font-semibold text-indigo-700">
-            Valor: {price}
+            Valor:{" "}
+            {price != null
+              ? new Intl.NumberFormat("pt-BR", {
+                  style: "currency",
+                  currency: "BRL",
+                }).format(price)
+              : "—"}
           </p>
         </div>
 
         <footer className="px-6 py-4 border-t flex flex-col gap-3">
-          <div className="flex gap-2">
-            <ActionButton Icon={FaSms} tooltip="SMS" color="bg-amber-500" />
-            <ActionButton
-              Icon={FaEnvelope}
-              tooltip="Email"
-              color="bg-sky-600"
-            />
-            <ActionButton
-              Icon={FaWhatsapp}
-              tooltip="WhatsApp"
-              color="bg-emerald-500"
-            />
-          </div>
-
-          <button className="w-full bg-emerald-600 text-white py-2 rounded-md hover:bg-emerald-700 flex items-center justify-center gap-2">
-            <FaCheckCircle /> Finalizar
-          </button>
+          <a
+            href={`https://wa.me/${whatsappNumber}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 flex items-center justify-center gap-2"
+          >
+            <FaWhatsapp /> WhatsApp
+          </a>
 
           <button
-            onClick={onClose}
-            className="w-full bg-gray-100 text-gray-700 py-2 rounded-md hover:bg-gray-200"
+            onClick={() => {
+              onFinalize(_id);
+              onClose();
+            }}
+            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center gap-2"
           >
-            Fechar
+            <FaCheckCircle /> Finalizar
           </button>
         </footer>
       </Dialog.Panel>
@@ -145,20 +157,3 @@ const Item = ({ icon, label }) => (
     {icon} <span>{label}</span>
   </p>
 );
-
-const ActionButton = ({ Icon, tooltip }) => (
-  <button
-    title={tooltip}
-    className="flex-1 bg-gray-50 border border-gray-200 py-2 rounded-md hover:bg-gray-100 flex items-center justify-center text-gray-600"
-  >
-    <Icon />
-  </button>
-);
-
-const formatDate = (iso) => {
-  try {
-    return new Date(iso).toLocaleDateString("pt-BR");
-  } catch {
-    return iso;
-  }
-};
