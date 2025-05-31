@@ -1,16 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { format, parse, startOfWeek, getDay } from "date-fns";
+import { parse, startOfWeek, getDay, startOfDay } from "date-fns";
 import ptLocale from "date-fns/locale/pt";
 import { dateFnsLocalizer } from "react-big-calendar";
 import { AppointmentTable, ViewToggle } from "@/components/Appointments";
 import CalendarComponent from "@/components/Appointments/CalendarComponent";
 import NewAppointmentModal from "@/components/Appointments/NewAppointmentModal/NewAppointmentModal";
-import { FaCalendarAlt, FaCalendarWeek, FaSearch } from "react-icons/fa";
+import { FaCalendarAlt, FaCalendarWeek } from "react-icons/fa";
 
 const locales = { pt: ptLocale };
 const localizer = dateFnsLocalizer({
-  format,
+  format: (d, fmt) => parse(d, fmt, new Date(), { locale: ptLocale }),
   parse: (v, fmt) => parse(v, fmt, new Date(), { locale: ptLocale }),
   startOfWeek: (d) => startOfWeek(d, { locale: ptLocale }),
   getDay,
@@ -18,34 +18,101 @@ const localizer = dateFnsLocalizer({
 });
 
 export default function Appointments() {
-  const finalizeAppointment = (id) => patchStatus(id, "Finalizado");
-  const token = localStorage.getItem("token");
-  const api = axios.create({
-    baseURL: "http://localhost:5000/api/appointments",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [view, setView] = useState("list");
-  const [filterStatus, setFilterStatus] = useState("Todos");
   const [search, setSearch] = useState("");
+  const [filterScope, setFilterScope] = useState("all");
+  const [scopeMenuOpen, setScopeMenuOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("Todos");
   const [modalData, setModalData] = useState(null);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const res = await api.get("/");
-        setAppointments(res.data);
-      } catch {
-        setError("Erro ao carregar agendamentos");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAppointments();
+    const token = localStorage.getItem("token");
+    axios
+      .get("http://localhost:5000/api/appointments", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setAppointments(res.data))
+      .catch(() => setError("Erro ao carregar agendamentos"))
+      .finally(() => setLoading(false));
   }, []);
+
+  const api = axios.create({
+    baseURL: "http://localhost:5000/api/appointments",
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
+
+  const createAppointment = async (data) => {
+    try {
+      const res = await api.post("/", {
+        petName: data.petName,
+        species: data.species,
+        breed: data.breed,
+        notes: data.notes,
+        size: data.size,
+        ownerName: data.ownerName,
+        ownerPhone: data.ownerPhone,
+        baseService: data.baseService._id,
+        extraServices: data.extraServices.map((s) => s._id),
+        date: data.date,
+        time: data.time,
+        status: "Pendente",
+      });
+      setAppointments((p) => [...p, res.data]);
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao criar agendamento");
+    }
+  };
+
+  const updateAppointment = async (id, data) => {
+    try {
+      const res = await api.put(`/${id}`, {
+        ...data,
+        baseService: data.baseService._id,
+        extraServices: data.extraServices.map((s) => s._id),
+      });
+      setAppointments((p) => p.map((a) => (a._id === id ? res.data : a)));
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao atualizar agendamento");
+    }
+  };
+
+  const patchStatus = (id, status) => {
+    const appt = appointments.find((a) => a._id === id);
+    if (appt) updateAppointment(id, { ...appt, status });
+  };
+  const finalizeAppointment = (id) => patchStatus(id, "Finalizado");
+
+  const handleSave = (data) =>
+    modalData?._id
+      ? updateAppointment(modalData._id, data).then(() => setModalData(null))
+      : createAppointment(data).then(() => setModalData(null));
+
+  const today = startOfDay(new Date());
+  const filtered = useMemo(() => {
+    const base = appointments.filter((a) => {
+      if (filterScope === "future") {
+        const [y, m, d] = a.date.slice(0, 10).split("-").map(Number);
+        if (startOfDay(new Date(y, m - 1, d)) < today) return false;
+      }
+      if (filterStatus !== "Todos" && a.status !== filterStatus) return false;
+      const term = search.toLowerCase();
+      return (
+        a.petName.toLowerCase().includes(term) ||
+        a.ownerName.toLowerCase().includes(term) ||
+        a.date.slice(0, 10).includes(term)
+      );
+    });
+    return base.sort((a, b) => {
+      const dtA = new Date(`${a.date}T${a.time}`);
+      const dtB = new Date(`${b.date}T${b.time}`);
+      return dtB - dtA;
+    });
+  }, [appointments, filterScope, filterStatus, search, today]);
 
   const events = useMemo(
     () =>
@@ -53,7 +120,6 @@ export default function Appointments() {
         const start = new Date(a.date);
         const [h, m] = a.time.split(":").map(Number);
         start.setHours(h, m);
-        const end = new Date(start.getTime() + 60 * 60 * 1000);
         return {
           ...a,
           title: `${a.petName} - ${
@@ -62,111 +128,26 @@ export default function Appointments() {
               : a.baseService
           }`,
           start,
-          end,
+          end: new Date(start.getTime() + 60 * 60 * 1000),
         };
       }),
     [appointments]
   );
 
-  const filtered = appointments.filter((a) => {
-    if (filterStatus !== "Todos" && a.status !== filterStatus) return false;
-    const term = search.toLowerCase();
-    return (
-      a.petName.toLowerCase().includes(term) ||
-      a.ownerName.toLowerCase().includes(term) ||
-      a.date.slice(0, 10).includes(term)
-    );
-  });
-
-  const createAppointment = async (data) => {
-    const payload = {
-      petName: data.petName,
-      species: data.species,
-      breed: data.breed,
-      notes: data.notes,
-      size: data.size,
-      ownerName: data.ownerName,
-      ownerPhone: data.ownerPhone,
-      baseService: data.baseService._id,
-      extraServices: data.extraServices.map((s) => s._id),
-      date: data.date,
-      time: data.time,
-      status: "Pendente",
-    };
-    const res = await api.post("/", payload);
-    setAppointments((prev) => [...prev, res.data]);
-  };
-
-  const updateAppointment = async (id, data) => {
-    const payload = {
-      ...data,
-      baseService: data.baseService._id,
-      extraServices: data.extraServices.map((s) => s._id),
-    };
-    const res = await api.put(`/${id}`, payload);
-    setAppointments((prev) => prev.map((a) => (a._id === id ? res.data : a)));
-  };
-
-  const patchStatus = async (id, status) => {
-    const target = appointments.find((a) => a._id === id);
-    if (!target) return;
-    await updateAppointment(id, { ...target, status });
-  };
-
-  const handleSave = async (data) => {
-    if (modalData && modalData._id) {
-      await updateAppointment(modalData._id, data);
-    } else {
-      await createAppointment(data);
-    }
-    setModalData(null);
-  };
-
-  if (loading) return <p className="p-6">Carregando...</p>;
-  if (error) return <p className="p-6 text-red-600">{error}</p>;
+  if (loading)
+    return <p className="p-6 text-gray-500 text-center">Carregando...</p>;
+  if (error) return <p className="p-6 text-red-600 text-center">{error}</p>;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <header className="mb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <h1 className="text-3xl font-semibold text-gray-800">
-          Gerenciamento de Agendamentos
-        </h1>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar pet, cliente ou data"
-              className="pl-10 pr-4 py-2 border rounded-md w-64 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="border bg-white rounded-md px-4 py-2 text-gray-700"
-          >
-            {["Todos", "Confirmado", "Pendente", "Cancelado", "Finalizado"].map(
-              (s) => (
-                <option key={s}>{s}</option>
-              )
-            )}
-          </select>
-          <ViewToggle
-            icon={FaCalendarAlt}
-            view="list"
-            curr={view}
-            setView={setView}
-          />
-          <ViewToggle
-            icon={FaCalendarWeek}
-            view="calendar"
-            curr={view}
-            setView={setView}
-          />
+      <header className="mb-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-semibold text-gray-800">
+            Gerenciamento de Agendamentos
+          </h1>
           <button
             onClick={() => setModalData({})}
-            className="ml-4 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+            className="bg-indigo-600 px-6 py-2 text-lg text-white rounded-md hover:bg-indigo-700 transition"
           >
             + Novo
           </button>
@@ -179,12 +160,31 @@ export default function Appointments() {
           onConfirm={(id) => patchStatus(id, "Confirmado")}
           onEdit={(appt) => setModalData(appt)}
           onCancel={(id) => patchStatus(id, "Cancelado")}
+          filterScope={filterScope}
+          setFilterScope={setFilterScope}
+          scopeMenuOpen={scopeMenuOpen}
+          setScopeMenuOpen={setScopeMenuOpen}
+          search={search}
+          setSearch={setSearch}
+          filterStatus={filterStatus}
+          setFilterStatus={setFilterStatus}
+          view={view}
+          setView={setView}
         />
       ) : (
         <CalendarComponent
-          localizer={localizer}
           events={events}
           onFinalize={finalizeAppointment}
+          filterScope={filterScope}
+          setFilterScope={setFilterScope}
+          scopeMenuOpen={scopeMenuOpen}
+          setScopeMenuOpen={setScopeMenuOpen}
+          search={search}
+          setSearch={setSearch}
+          filterStatus={filterStatus}
+          setFilterStatus={setFilterStatus}
+          view={view} 
+          setView={setView}
         />
       )}
 

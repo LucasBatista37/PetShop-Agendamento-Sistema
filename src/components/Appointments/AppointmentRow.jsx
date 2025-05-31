@@ -22,9 +22,10 @@ export default function AppointmentRow({
   } = appointment;
 
   const statusClass = {
-    Confirmado: "bg-green-100 text-green-600",
+    Confirmado: "bg-blue-100 text-blue-600",
     Pendente: "bg-yellow-100 text-yellow-600",
     Cancelado: "bg-red-100 text-red-600",
+    Finalizado: "bg-green-100 text-green-600",
   }[status];
 
   return (
@@ -43,7 +44,7 @@ export default function AppointmentRow({
           <span>{baseService?.name || "Serviço não definido"}</span>
           {extraServices.length > 0 && (
             <span className="text-xs text-gray-500">
-              Extras: {extraServices.map(e => e.name).join(", ")}
+              Extras: {extraServices.map((e) => e.name).join(", ")}
             </span>
           )}
         </div>
@@ -53,9 +54,7 @@ export default function AppointmentRow({
         {format(parseISO(date), "dd/MM/yyyy")} às {time}
       </td>
 
-      <td className="py-3 px-4">
-        {price ? price : "—"}
-      </td>
+      <td className="py-3 px-4">{price ? price : "—"}</td>
 
       <td className="py-3 px-4">
         <span
@@ -85,8 +84,7 @@ export default function AppointmentRow({
             <IconButton
               title="Cancelar"
               onClick={() =>
-                window.confirm("Cancelar este agendamento?") &&
-                onCancel(_id)
+                window.confirm("Cancelar este agendamento?") && onCancel(_id)
               }
               icon={FaTrash}
               className="text-red-500 hover:text-red-700"
