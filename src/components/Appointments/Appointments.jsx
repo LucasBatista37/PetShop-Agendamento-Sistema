@@ -71,10 +71,17 @@ export default function Appointments() {
     try {
       const res = await api.put(`/${id}`, {
         ...data,
-        baseService: data.baseService._id,
-        extraServices: data.extraServices.map((s) => s._id),
+        baseService:
+          typeof data.baseService === "object"
+            ? data.baseService._id
+            : data.baseService,
+        extraServices: data.extraServices.map((s) =>
+          typeof s === "object" ? s._id : s
+        ),
       });
-      setAppointments((p) => p.map((a) => (a._id === id ? res.data : a)));
+      setAppointments((p) =>
+        p.map((a) => (a._id === id ? res.data : a))
+      );
     } catch (err) {
       console.error(err);
       alert("Erro ao atualizar agendamento");
@@ -85,7 +92,19 @@ export default function Appointments() {
     const appt = appointments.find((a) => a._id === id);
     if (appt) updateAppointment(id, { ...appt, status });
   };
+
   const finalizeAppointment = (id) => patchStatus(id, "Finalizado");
+
+  const deleteAppointment = async (id) => {
+    if (!window.confirm("Deseja excluir este agendamento?")) return;
+    try {
+      await api.delete(`/${id}`);
+      setAppointments((prev) => prev.filter((a) => a._id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao excluir agendamento");
+    }
+  };
 
   const handleSave = (data) =>
     modalData?._id
@@ -118,7 +137,7 @@ export default function Appointments() {
     () =>
       appointments.map((a) => {
         const start = new Date(a.date);
-        const [h, m] = a.time.split(":").map(Number);
+        const [h, m] = a.time.split(":" ).map(Number);
         start.setHours(h, m);
         return {
           ...a,
@@ -160,6 +179,8 @@ export default function Appointments() {
           onConfirm={(id) => patchStatus(id, "Confirmado")}
           onEdit={(appt) => setModalData(appt)}
           onCancel={(id) => patchStatus(id, "Cancelado")}
+          onStatusChange={patchStatus}
+          onDelete={deleteAppointment}
           filterScope={filterScope}
           setFilterScope={setFilterScope}
           scopeMenuOpen={scopeMenuOpen}
@@ -183,7 +204,7 @@ export default function Appointments() {
           setSearch={setSearch}
           filterStatus={filterStatus}
           setFilterStatus={setFilterStatus}
-          view={view} 
+          view={view}
           setView={setView}
         />
       )}

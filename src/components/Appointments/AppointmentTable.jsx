@@ -1,13 +1,22 @@
 import React, { useState, useMemo } from "react";
 import IconButton from "./IconButton";
-import { FaCheckCircle, FaEdit, FaTrash, FaSearch, FaCalendarAlt, FaCalendarWeek } from "react-icons/fa";
+import AppointmentDetails from "./AppointmentDetails";
+import {
+  FaEdit,
+  FaEye,
+  FaSearch,
+  FaCalendarAlt,
+  FaCalendarWeek,
+  FaEllipsisV,
+  FaTrash,
+} from "react-icons/fa";
 import { format, parseISO } from "date-fns";
 
 export default function AppointmentTable({
-  data = [],            
-  onConfirm,
+  data = [],
   onEdit,
-  onCancel,
+  onStatusChange,
+  onDelete,
   filterScope,
   setFilterScope,
   scopeMenuOpen,
@@ -21,6 +30,8 @@ export default function AppointmentTable({
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selected, setSelected] = useState(null);
+  const [statusMenuOpen, setStatusMenuOpen] = useState(null);
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
@@ -41,6 +52,14 @@ export default function AppointmentTable({
 
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
+      {selected && (
+        <AppointmentDetails
+          open={!!selected}
+          data={selected}
+          onClose={() => setSelected(null)}
+        />
+      )}
+
       <div className="px-6 py-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
         <div className="relative">
           <button
@@ -48,9 +67,7 @@ export default function AppointmentTable({
             className="flex items-center gap-2 border border-gray-300 bg-white rounded-md px-4 py-2 text-gray-700 hover:bg-gray-50 transition"
           >
             <FaCalendarAlt className="text-gray-600" />
-            {filterScope === "all"
-              ? "Todos Agendamentos"
-              : "Hoje e Futuros"}
+            {filterScope === "all" ? "Todos Agendamentos" : "Hoje e Futuros"}
           </button>
           {scopeMenuOpen && (
             <div className="absolute z-10 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
@@ -140,10 +157,7 @@ export default function AppointmentTable({
         <tbody className="bg-white divide-y divide-gray-200">
           {paginatedData.length === 0 ? (
             <tr>
-              <td
-                colSpan={8}
-                className="px-6 py-4 text-center text-gray-400"
-              >
+              <td colSpan={8} className="px-6 py-4 text-center text-gray-400">
                 Nenhum agendamento encontrado.
               </td>
             </tr>
@@ -169,84 +183,109 @@ export default function AppointmentTable({
                 Finalizado: "bg-green-100 text-green-700",
               }[status] || "bg-gray-100 text-gray-700";
 
+              const baseServiceName =
+                typeof baseService === "object"
+                  ? baseService?.name
+                  : "—";
+              const extraServiceNames =
+                Array.isArray(extraServices) &&
+                extraServices
+                  .map((e) => (typeof e === "object" ? e.name : ""))
+                  .filter(Boolean)
+                  .join(", ");
+
               return (
                 <tr
                   key={_id}
                   className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-gray-500">
                     {startIndex + idx + 1}
                   </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                  <td className="px-6 py-4 font-medium text-gray-800">
                     {petName}
                   </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4">
                     <div className="flex flex-col">
                       <span className="text-sm text-gray-800">{ownerName}</span>
-                      <span className="text-xs text-gray-400">
-                        {ownerPhone}
-                      </span>
+                      <span className="text-xs text-gray-400">{ownerPhone}</span>
                     </div>
                   </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4">
                     <div className="flex flex-col">
                       <span className="text-sm text-gray-800">
-                        {baseService?.name || "—"}
+                        {baseServiceName || "—"}
                       </span>
-                      {extraServices.length > 0 && (
+                      {extraServiceNames && (
                         <span className="text-xs text-gray-500">
-                          Extras: {extraServices.map((e) => e.name).join(", ")}
+                          Extras: {extraServiceNames}
                         </span>
                       )}
                     </div>
                   </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                  <td className="px-6 py-4 text-sm text-gray-800">
                     {format(parseISO(date), "dd/MM/yyyy")} às {time}
                   </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
+                  <td className="px-6 py-4 text-sm text-gray-800">
                     {price ? `R$ ${price}` : "—"}
                   </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4">
                     <span
                       className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${statusClass}`}
                     >
                       {status}
                     </span>
                   </td>
-
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center space-x-2">
-                      {status !== "Confirmado" && (
-                        <IconButton
-                          title="Confirmar"
-                          onClick={() => onConfirm(_id)}
-                          icon={FaCheckCircle}
-                          className="text-green-600 hover:text-green-800"
-                        />
-                      )}
+                  <td className="px-6 py-4">
+                    <div className="relative inline-flex items-center gap-2">
+                      <IconButton
+                        title="Visualizar"
+                        onClick={() => setSelected(appointment)}
+                        icon={FaEye}
+                        className="text-gray-600 hover:text-indigo-600"
+                      />
                       <IconButton
                         title="Editar"
                         onClick={() => onEdit(appointment)}
                         icon={FaEdit}
                         className="text-blue-600 hover:text-blue-800"
                       />
-                      {status !== "Cancelado" && (
+                      <IconButton
+                        title="Excluir"
+                        onClick={() => onDelete(_id)}
+                        icon={FaTrash}
+                        className="text-red-600 hover:text-red-800"
+                      />
+                      <div className="relative">
                         <IconButton
-                          title="Cancelar"
+                          title="Alterar Status"
                           onClick={() =>
-                            window.confirm("Cancelar este agendamento?") &&
-                            onCancel(_id)
+                            setStatusMenuOpen((open) =>
+                              open === _id ? null : _id
+                            )
                           }
-                          icon={FaTrash}
-                          className="text-red-500 hover:text-red-700"
+                          icon={FaEllipsisV}
+                          className="text-gray-600 hover:text-gray-900"
                         />
-                      )}
+                        {statusMenuOpen === _id && (
+                          <div className="absolute z-10 right-0 mt-2 w-36 bg-white border border-gray-200 rounded-md shadow-lg">
+                            {["Pendente", "Confirmado", "Finalizado", "Cancelado"].map(
+                              (option) => (
+                                <button
+                                  key={option}
+                                  onClick={() => {
+                                    onStatusChange(_id, option);
+                                    setStatusMenuOpen(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                  {option}
+                                </button>
+                              )
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
                 </tr>
