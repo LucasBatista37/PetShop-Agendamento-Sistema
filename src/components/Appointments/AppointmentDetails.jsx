@@ -8,7 +8,7 @@ export default function AppointmentDetails({
   open,
   onClose,
   data,
-  onFinalize, 
+  onFinalize,
 }) {
   if (!data) return null;
 
@@ -29,7 +29,32 @@ export default function AppointmentDetails({
     status,
   } = data;
 
-  const statusInfo = {}[status] || {};
+  const statusInfo = {
+    Confirmado: {
+      bg: "bg-blue-100",
+      text: "text-blue-600",
+      label: "Confirmado",
+    },
+    Pendente: {
+      bg: "bg-amber-100",
+      text: "text-amber-600",
+      label: "Pendente",
+    },
+    Cancelado: {
+      bg: "bg-rose-100",
+      text: "text-rose-600",
+      label: "Cancelado",
+    },
+    Finalizado: {
+      bg: "bg-emerald-100",
+      text: "text-emerald-600",
+      label: "Finalizado",
+    },
+  }[status] || {
+    bg: "bg-gray-100",
+    text: "text-gray-600",
+    label: status,
+  };
 
   const formatDate = (iso) => {
     try {

@@ -27,7 +27,7 @@ export default function NewAppointmentModal({
   onClose,
   onSave,
   appointments,
-  initialData, 
+  initialData,
 }) {
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState(defaultData);
@@ -76,20 +76,38 @@ export default function NewAppointmentModal({
   const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
+  const validatePet = (pet) => {
+    return (
+      pet.name.trim() &&
+      pet.ownerName.trim() &&
+      pet.ownerPhone.trim() &&
+      ["Cachorro", "Gato"].includes(pet.species) &&
+      ["Pequeno", "Medio", "Grande"].includes(pet.size)
+    );
+  };
+
+  const validateService = (service) => {
+    return service.base && typeof service.base === "object";
+  };
+
+  const validateSchedule = (schedule) => {
+    return schedule.date && schedule.time;
+  };
+
   function formDataToAppointment({ pet, service, schedule }) {
     return {
-      petName: pet.name,
-      ownerName: pet.ownerName,
-      ownerPhone: pet.ownerPhone,
+      petName: pet.name.trim(),
+      ownerName: pet.ownerName.trim(),
+      ownerPhone: pet.ownerPhone.trim(),
       species: pet.species,
-      breed: pet.breed,
+      breed: pet.breed.trim(),
       size: pet.size,
-      notes: pet.notes,
+      notes: pet.notes.trim(),
       baseService: service.base,
       extraServices: service.extras,
       date: schedule.date,
       time: schedule.time,
-      status: initialData? initialData.status : "Pendente", 
+      status: initialData ? initialData.status : "Pendente",
     };
   }
 
@@ -145,10 +163,9 @@ export default function NewAppointmentModal({
             <button
               onClick={next}
               disabled={
-                (step === 0 && !formData.pet.name) ||
-                (step === 1 && !formData.service.base) ||
-                (step === 2 &&
-                  !(formData.schedule.date && formData.schedule.time))
+                (step === 0 && !validatePet(formData.pet)) ||
+                (step === 1 && !validateService(formData.service)) ||
+                (step === 2 && !validateSchedule(formData.schedule))
               }
               className="flex items-center gap-1 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-40"
             >
