@@ -1,15 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Calendar, Views, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
-import {
-  FaChevronLeft,
-  FaChevronRight,
-  FaCalendarAlt,
-  FaCalendarWeek,
-  FaSearch,
-} from "react-icons/fa";
 import AppointmentDetails from "./AppointmentDetails";
+import TableFilters from "./AppointmentTable/TableFilters";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 const locales = { "pt-BR": ptBR };
@@ -24,8 +18,7 @@ const localizer = dateFnsLocalizer({
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const ToolbarBtn = ({ children, onClick, primary, active }) => {
-  let base =
-    "px-3 py-1.5 rounded text-sm flex items-center gap-1 transition-colors";
+  let base = "px-3 py-1.5 rounded text-sm flex items-center gap-1 transition-colors";
   if (primary)
     base += " bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm font-medium";
   else if (active)
@@ -33,7 +26,11 @@ const ToolbarBtn = ({ children, onClick, primary, active }) => {
   else base += " bg-white text-gray-700 hover:bg-gray-100 border";
 
   return (
-    <button onClick={onClick} className={base} aria-label={typeof children === "string" ? children : undefined}>
+    <button
+      onClick={onClick}
+      className={base}
+      aria-label={typeof children === "string" ? children : undefined}
+    >
       {children}
     </button>
   );
@@ -52,8 +49,8 @@ const CustomToolbar = ({ label, onNavigate, onView, view }) => {
         <ToolbarBtn onClick={() => onNavigate("TODAY")} primary>
           Hoje
         </ToolbarBtn>
-        <ToolbarBtn onClick={() => onNavigate("PREV")}> <FaChevronLeft /> Anterior </ToolbarBtn>
-        <ToolbarBtn onClick={() => onNavigate("NEXT")}> Próximo <FaChevronRight /> </ToolbarBtn>
+        <ToolbarBtn onClick={() => onNavigate("PREV")}>Anterior</ToolbarBtn>
+        <ToolbarBtn onClick={() => onNavigate("NEXT")}>Próximo</ToolbarBtn>
       </div>
 
       <h3 className="text-lg font-semibold text-gray-800 text-center">{label}</h3>
@@ -68,6 +65,17 @@ const CustomToolbar = ({ label, onNavigate, onView, view }) => {
     </div>
   );
 };
+
+function useDebouncedValue(value, delay) {
+  const [debounced, setDebounced] = useState(value);
+
+  useMemo(() => {
+    const handler = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debounced;
+}
 
 export default function CalendarComponent({
   events,
@@ -87,6 +95,26 @@ export default function CalendarComponent({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selected, setSelected] = useState(null);
 
+  const today = useMemo(() => new Date(), []);
+  const debouncedSearch = useDebouncedValue(search, 300);
+
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) => {
+      if (filterScope === "future") {
+        if (new Date(event.start) < new Date(today.setHours(0, 0, 0, 0))) return false;
+      }
+
+      if (filterStatus !== "Todos" && event.status !== filterStatus) return false;
+
+      const term = debouncedSearch.toLowerCase();
+      return (
+        event.petName?.toLowerCase().includes(term) ||
+        event.ownerName?.toLowerCase().includes(term) ||
+        event.date?.includes(term)
+      );
+    });
+  }, [events, filterScope, filterStatus, debouncedSearch, today]);
+
   const eventStyleGetter = (event) => ({
     style: {
       backgroundColor:
@@ -103,48 +131,25 @@ export default function CalendarComponent({
   });
 
   return (
-    <div className="bg-white shadow-sm rounded-lg p-4">
-      {/* FILTROS MOVIDOS PARA CÁ */}
-      <div className="px-6 py-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
-        <div className="relative">
-          <button onClick={() => setScopeMenuOpen((o) => !o)} className="flex items-center gap-2 border border-gray-300 bg-white rounded-md px-4 py-2 text-gray-700 hover:bg-gray-50 transition">
-            <FaCalendarAlt className="text-gray-600" />
-            {filterScope === "all" ? "Todos Agendamentos" : "Hoje e Futuros"}
-          </button>
-          {scopeMenuOpen && (
-            <div className="absolute z-10 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
-              <button onClick={() => { setFilterScope("all"); setScopeMenuOpen(false); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100">Todos Agendamentos</button>
-              <button onClick={() => { setFilterScope("future"); setScopeMenuOpen(false); }} className="block w-full text-left px-4 py-2 hover:bg-gray-100">Hoje e Futuros</button>
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-64">
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar..." className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          </div>
-
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="border border-gray-300 bg-white rounded-md px-4 py-2 text-gray-700">
-            {["Todos", "Confirmado", "Pendente", "Cancelado", "Finalizado"].map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-
-          <button onClick={() => setView("list")} className={`p-2 rounded-md ${view === "list" ? "bg-indigo-600 text-white" : "text-gray-600 hover:bg-gray-200"}`}>
-            <FaCalendarAlt />
-          </button>
-          <button onClick={() => setView("calendar")} className={`p-2 rounded-md ${view === "calendar" ? "bg-indigo-600 text-white" : "text-gray-600 hover:bg-gray-200"}`}>
-            <FaCalendarWeek />
-          </button>
-        </div>
-      </div>
+    <div className="bg-white shadow-sm rounded-lg px-4 pb-4 pr-4 pl-4">
+      <TableFilters
+        filterScope={filterScope}
+        setFilterScope={setFilterScope}
+        scopeMenuOpen={scopeMenuOpen}
+        setScopeMenuOpen={setScopeMenuOpen}
+        search={search}
+        setSearch={setSearch}
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        view={view}
+        setView={setView}
+      />
 
       <div className="border border-gray-200 rounded-md overflow-hidden">
         <Calendar
           localizer={localizer}
           culture="pt-BR"
-          events={events}
+          events={filteredEvents}
           startAccessor="start"
           endAccessor="end"
           date={currentDate}
@@ -178,16 +183,24 @@ export default function CalendarComponent({
             weekdayFormat: (date) => capitalize(format(date, "EEEE", { locale: ptBR })),
             monthHeaderFormat: (date) => capitalize(format(date, "MMMM yyyy", { locale: ptBR })),
             dayHeaderFormat: (date) => capitalize(format(date, "EEEE, dd MMMM", { locale: ptBR })),
-            dayRangeHeaderFormat: ({ start, end }) => `${capitalize(format(start, "dd MMMM", { locale: ptBR }))} — ${capitalize(format(end, "dd MMMM", { locale: ptBR }))}`,
-            agendaHeaderFormat: ({ start, end }) => `${format(start, "dd/MM/yyyy", { locale: ptBR })} - ${format(end, "dd/MM/yyyy", { locale: ptBR })}`,
+            dayRangeHeaderFormat: ({ start, end }) =>
+              `${capitalize(format(start, "dd MMMM", { locale: ptBR }))} — ${capitalize(format(end, "dd MMMM", { locale: ptBR }))}`,
+            agendaHeaderFormat: ({ start, end }) =>
+              `${format(start, "dd/MM/yyyy", { locale: ptBR })} - ${format(end, "dd/MM/yyyy", { locale: ptBR })}`,
             agendaDateFormat: (date) => format(date, "dd/MM", { locale: ptBR }),
             agendaTimeFormat: (date) => format(date, "HH:mm", { locale: ptBR }),
-            agendaTimeRangeFormat: ({ start, end }) => `${format(start, "HH:mm", { locale: ptBR })} - ${format(end, "HH:mm", { locale: ptBR })}`,
+            agendaTimeRangeFormat: ({ start, end }) =>
+              `${format(start, "HH:mm", { locale: ptBR })} - ${format(end, "HH:mm", { locale: ptBR })}`,
           }}
         />
       </div>
 
-      <AppointmentDetails open={!!selected} data={selected} onClose={() => setSelected(null)} onFinalize={onFinalize} />
+      <AppointmentDetails
+        open={!!selected}
+        data={selected}
+        onClose={() => setSelected(null)}
+        onFinalize={onFinalize}
+      />
     </div>
   );
 }
