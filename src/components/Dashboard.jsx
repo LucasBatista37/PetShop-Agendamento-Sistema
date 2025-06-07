@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   FaCalendarDay,
   FaCalendarWeek,
@@ -7,8 +7,8 @@ import {
   FaEllipsisV,
   FaFilter,
   FaFileExport,
-} from 'react-icons/fa'
-import { format, addDays } from 'date-fns'
+} from "react-icons/fa";
+import { format, addDays } from "date-fns";
 
 import {
   ResponsiveContainer,
@@ -22,56 +22,58 @@ import {
   Pie,
   Cell,
   Legend,
-} from 'recharts'
+} from "recharts";
 
 const mockAppointments = [
-  { id: 1, time: '09:00', pet: 'Maxi', service: 'Banho Simples' },
-  { id: 2, time: '10:30', pet: 'Lulu', service: 'Banho + Tosa' },
-  { id: 3, time: '14:00', pet: 'Bolt', service: 'Tosa Higiênica' },
-]
+  { id: 1, time: "09:00", pet: "Maxi", service: "Banho Simples" },
+  { id: 2, time: "10:30", pet: "Lulu", service: "Banho + Tosa" },
+  { id: 3, time: "14:00", pet: "Bolt", service: "Tosa Higiênica" },
+];
 
 const mockWeekly = Array.from({ length: 7 }).map((_, i) => ({
-  day: format(addDays(new Date(), i), 'EEE'),
+  day: format(addDays(new Date(), i), "EEE"),
   count: Math.floor(Math.random() * 5) + 1,
-}))
+}));
 
 const mockByHour = [
-  { hour: '08:00', count: 2 },
-  { hour: '09:00', count: 3 },
-  { hour: '10:00', count: 1 },
-  { hour: '11:00', count: 4 },
-  { hour: '12:00', count: 0 },
-  { hour: '13:00', count: 2 },
-]
+  { hour: "08:00", count: 2 },
+  { hour: "09:00", count: 3 },
+  { hour: "10:00", count: 1 },
+  { hour: "11:00", count: 4 },
+  { hour: "12:00", count: 0 },
+  { hour: "13:00", count: 2 },
+];
 
 const mockServices = [
-  { service: 'Banho Simples', count: 12 },
-  { service: 'Banho + Tosa', count: 8 },
-  { service: 'Tosa Higiênica', count: 5 },
-]
+  { service: "Banho Simples", count: 12 },
+  { service: "Banho + Tosa", count: 8 },
+  { service: "Tosa Higiênica", count: 5 },
+];
 
 const mockDaily = Array.from({ length: 7 }).map((_, i) => {
-  const d = addDays(new Date(), i - 6)
+  const d = addDays(new Date(), i - 6);
   return {
-    date: format(d, 'dd/MM'),
+    date: format(d, "dd/MM"),
     count: Math.floor(Math.random() * 10) + 1,
-  }
-})
+  };
+});
 
-const PIE_COLORS = ['#6366F1', '#10B981', '#F59E0B']
+const PIE_COLORS = ["#6366F1", "#10B981", "#F59E0B"];
 
 export default function Dashboard() {
-  const [period, setPeriod] = useState('Hoje')
+  const [period, setPeriod] = useState("Hoje");
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <header className="mb-8 border-b pb-4 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-        <h1 className="text-3xl font-semibold text-gray-800">Painel de Administração</h1>
+        <h1 className="text-3xl font-semibold text-gray-800">
+          Painel de Administração
+        </h1>
         <div className="flex items-center gap-3">
           <select
             className="border border-gray-300 bg-white rounded-md px-4 py-2 text-gray-700 focus:ring-indigo-500 focus:border-indigo-500"
             value={period}
-            onChange={e => setPeriod(e.target.value)}
+            onChange={(e) => setPeriod(e.target.value)}
           >
             <option>Hoje</option>
             <option>Esta Semana</option>
@@ -98,18 +100,24 @@ export default function Dashboard() {
             </button>
           </div>
           <ul className="p-4 space-y-3">
-            {mockAppointments.map(a => (
+            {mockAppointments.map((a) => (
               <li
                 key={a.id}
                 className="flex items-center justify-between bg-gray-50 hover:bg-indigo-50 transition-colors rounded-lg px-4 py-3"
               >
                 <div>
-                  <p className="font-semibold text-gray-800">{a.time} – {a.pet}</p>
+                  <p className="font-semibold text-gray-800">
+                    {a.time} – {a.pet}
+                  </p>
                   <p className="text-sm text-gray-500">{a.service}</p>
                 </div>
                 <div className="flex items-center gap-2 text-gray-400">
-                  <button className="hover:text-indigo-600"><FaCalendarDay /></button>
-                  <button className="hover:text-red-500"><FaClock /></button>
+                  <button className="hover:text-indigo-600">
+                    <FaCalendarDay />
+                  </button>
+                  <button className="hover:text-red-500">
+                    <FaClock />
+                  </button>
                 </div>
               </li>
             ))}
@@ -133,7 +141,9 @@ export default function Dashboard() {
                 className="flex flex-col items-center bg-gray-50 rounded-lg p-2 hover:bg-indigo-50 transition-colors"
               >
                 <span className="text-xs text-gray-500">{d.day}</span>
-                <span className="mt-1 text-indigo-600 font-semibold">{d.count}</span>
+                <span className="mt-1 text-indigo-600 font-semibold">
+                  {d.count}
+                </span>
               </div>
             ))}
           </div>
@@ -158,9 +168,14 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {mockByHour.map((h, idx) => (
-                <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <tr
+                  key={idx}
+                  className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                >
                   <td className="py-2 px-4">{h.hour}</td>
-                  <td className="py-2 px-4 font-semibold text-indigo-600">{h.count}</td>
+                  <td className="py-2 px-4 font-semibold text-indigo-600">
+                    {h.count}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -171,7 +186,9 @@ export default function Dashboard() {
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center gap-2">
               <FaClipboardList className="text-indigo-600 w-5 h-5" />
-              <h2 className="text-gray-700 font-medium">Serviços Solicitados</h2>
+              <h2 className="text-gray-700 font-medium">
+                Serviços Solicitados
+              </h2>
             </div>
             <button className="p-1 text-gray-400 hover:text-gray-600">
               <FaEllipsisV />
@@ -193,27 +210,34 @@ export default function Dashboard() {
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium text-gray-700 mb-4">Agendamentos (7 dias)</h2>
+          <h2 className="text-lg font-medium text-gray-700 mb-4">
+            Agendamentos (7 dias)
+          </h2>
           <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={mockDaily} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+            <LineChart
+              data={mockDaily}
+              margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" tickLine={false} />
               <YAxis allowDecimals={false} tickLine={false} />
               <ReTooltip />
-              <Line 
-                type="monotone" 
-                dataKey="count" 
-                stroke="#6366F1" 
-                strokeWidth={2} 
-                dot={{ r: 3 }} 
-                activeDot={{ r: 6 }} 
+              <Line
+                type="monotone"
+                dataKey="count"
+                stroke="#6366F1"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                activeDot={{ r: 6 }}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium text-gray-700 mb-4">Distribuição de Serviços</h2>
+          <h2 className="text-lg font-medium text-gray-700 mb-4">
+            Distribuição de Serviços
+          </h2>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie
@@ -237,5 +261,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

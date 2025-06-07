@@ -68,8 +68,9 @@ export default function NewAppointmentModal({
     const dayAppts = appointments.filter(
       (a) => a.date.slice(0, 10) === formData.schedule.date
     );
-    const hours = Array.from({ length: 10 }, (_, i) =>
-      `${String(9 + i).padStart(2, "0")}:00`
+    const hours = Array.from(
+      { length: 10 },
+      (_, i) => `${String(9 + i).padStart(2, "0")}:00`
     );
     return hours.filter(
       (h) => dayAppts.filter((a) => a.time === h).length < MAX_PER_HOUR
@@ -99,12 +100,14 @@ export default function NewAppointmentModal({
     Joi.object({
       base: Joi.object().required().messages({
         "any.required": "Selecione um serviço base.",
+        "object.base": "Selecione um serviço base válido.",
       }),
       extras: Joi.array(),
     }),
     Joi.object({
       date: Joi.date().required().messages({
         "any.required": "A data é obrigatória.",
+        "date.base": "A data deve ser válida.",
       }),
       time: Joi.string()
         .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
@@ -129,15 +132,20 @@ export default function NewAppointmentModal({
         formatted[err.path[0]] = err.message;
       });
       setErrors(formatted);
+      return false;
     } else {
       setErrors({});
+      return true;
     }
   };
 
   const next = () => {
-    validateStep();
-    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    const isValid = validateStep();
+    if (isValid) {
+      setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    }
   };
+
   const back = () => setStep((s) => Math.max(s - 1, 0));
 
   function formDataToAppointment({ pet, service, schedule }) {

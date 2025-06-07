@@ -79,9 +79,7 @@ export default function Appointments() {
           typeof s === "object" ? s._id : s
         ),
       });
-      setAppointments((p) =>
-        p.map((a) => (a._id === id ? res.data : a))
-      );
+      setAppointments((p) => p.map((a) => (a._id === id ? res.data : a)));
     } catch (err) {
       console.error(err);
       alert("Erro ao atualizar agendamento");
@@ -137,14 +135,14 @@ export default function Appointments() {
     () =>
       appointments.map((a) => {
         const start = new Date(a.date);
-        const [h, m] = a.time.split(":" ).map(Number);
+        const [h, m] = a.time.split(":").map(Number);
         start.setHours(h, m);
         return {
           ...a,
           title: `${a.petName} - ${
-            typeof a.baseService === "object"
+            a.baseService && typeof a.baseService === "object"
               ? a.baseService.name
-              : a.baseService
+              : a.baseService || "Serviço desconhecido"
           }`,
           start,
           end: new Date(start.getTime() + 60 * 60 * 1000),

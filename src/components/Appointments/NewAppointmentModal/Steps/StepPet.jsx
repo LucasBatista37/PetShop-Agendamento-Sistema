@@ -1,10 +1,12 @@
-import React from 'react';
+import React from "react";
 
-export default function StepPet({ data, onChange }) {
+export default function StepPet({ data, onChange, errors = {} }) {
   return (
     <div className="space-y-6">
       <div className="space-y-3">
         <h3 className="text-gray-700 font-semibold">Informações do Pet</h3>
+
+        {errors.name && <p className="text-red-600 text-sm">{errors.name}</p>}
         <input
           value={data.name}
           onChange={(e) => onChange({ ...data, name: e.target.value })}
@@ -13,24 +15,34 @@ export default function StepPet({ data, onChange }) {
         />
 
         <div className="grid grid-cols-2 gap-4">
-          <select
-            value={data.species}
-            onChange={(e) => onChange({ ...data, species: e.target.value })}
-            className="border p-2 rounded"
-          >
-            <option>Cachorro</option>
-            <option>Gato</option>
-          </select>
+          <div>
+            {errors.species && (
+              <p className="text-red-600 text-sm">{errors.species}</p>
+            )}
+            <select
+              value={data.species}
+              onChange={(e) => onChange({ ...data, species: e.target.value })}
+              className="border p-2 rounded w-full"
+            >
+              <option>Cachorro</option>
+              <option>Gato</option>
+            </select>
+          </div>
 
-          <select
-            value={data.size}
-            onChange={(e) => onChange({ ...data, size: e.target.value })}
-            className="border p-2 rounded"
-          >
-            <option>Pequeno</option>
-            <option>Médio</option>
-            <option>Grande</option>
-          </select>
+          <div>
+            {errors.size && (
+              <p className="text-red-600 text-sm">{errors.size}</p>
+            )}
+            <select
+              value={data.size}
+              onChange={(e) => onChange({ ...data, size: e.target.value })}
+              className="border p-2 rounded w-full"
+            >
+              <option>Pequeno</option>
+              <option>Médio</option>
+              <option>Grande</option>
+            </select>
+          </div>
         </div>
 
         <input
@@ -52,20 +64,30 @@ export default function StepPet({ data, onChange }) {
       <div className="space-y-3">
         <h3 className="text-gray-700 font-semibold">Informações do Dono</h3>
         <div className="grid grid-cols-2 gap-4">
-          <input
-            value={data.ownerName || ""}
-            onChange={(e) => onChange({ ...data, ownerName: e.target.value })}
-            placeholder="Nome do dono"
-            className="border p-2 rounded"
-            required
-          />
-          <input
-            value={data.ownerPhone || ""}
-            onChange={(e) => onChange({ ...data, ownerPhone: e.target.value })}
-            placeholder="Telefone do dono"
-            className="border p-2 rounded"
-            required
-          />
+          <div>
+            {errors.ownerName && (
+              <p className="text-red-600 text-sm">{errors.ownerName}</p>
+            )}
+            <input
+              value={data.ownerName || ""}
+              onChange={(e) => onChange({ ...data, ownerName: e.target.value })}
+              placeholder="Nome do dono"
+              className="border p-2 rounded w-full"
+            />
+          </div>
+          <div>
+            {errors.ownerPhone && (
+              <p className="text-red-600 text-sm">{errors.ownerPhone}</p>
+            )}
+            <input
+              value={data.ownerPhone || ""}
+              onChange={(e) =>
+                onChange({ ...data, ownerPhone: e.target.value })
+              }
+              placeholder="Telefone do dono"
+              className="border p-2 rounded w-full"
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function StepService({ data, onChange }) {
+export default function StepService({ data, onChange, errors = {} }) {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,6 +38,7 @@ export default function StepService({ data, onChange }) {
     <div className="space-y-6">
       <div>
         <h3 className="text-gray-700 font-semibold mb-2">Serviço Base</h3>
+        {errors.base && <p className="text-red-600 text-sm mb-1">{errors.base}</p>}
         <div
           className={`overflow-y-auto pr-1 rounded-md custom-scroll`}
           style={{ maxHeight: bases.length > BASE_LIMIT ? "13rem" : "none" }}
@@ -71,7 +72,7 @@ export default function StepService({ data, onChange }) {
         <div
           className="custom-scroll overflow-y-auto pr-1 rounded-md"
           style={{
-            maxHeight: extras.length > 6 ? "240px" : "auto",
+            maxHeight: extras.length > EXTRAS_LIMIT ? "240px" : "auto",
           }}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
