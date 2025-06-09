@@ -1,12 +1,11 @@
-import { useMemo, useState } from "react";
-import { format, addDays } from "date-fns";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import WeeklyCalendar from "./Dashboard/Calendar/WeeklyCalendar";
 import Last7DaysChart from "./Dashboard/Chart/Last7DaysChart";
 import PetImageCard from "./Dashboard/Card/PetImageCard";
 import AppointmentsList from "./Dashboard/Card/AppointmentsList";
 import ServiceBarChart from "./Dashboard/Chart/ServiceBarChart";
 import StatusPieChart from "./Dashboard/Chart/StatusPieChart";
+import { fetchDashboardStats } from "@/api/api";
 
 export default function DashboardAgendamentos() {
   const [date, setDate] = useState(new Date());
@@ -18,15 +17,10 @@ export default function DashboardAgendamentos() {
   });
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const loadStats = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/dashboard/stats", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        const data = await res.json();
-        setStats(data);
+        const res = await fetchDashboardStats();
+        setStats(res.data);
       } catch (err) {
         console.error("Erro ao carregar dashboard:", err);
       } finally {
@@ -34,7 +28,7 @@ export default function DashboardAgendamentos() {
       }
     };
 
-    fetchStats();
+    loadStats();
   }, []);
 
   return (

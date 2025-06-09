@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import EditServiceModal from "./EditServiceModal";
+import { fetchServices, deleteService, updateService } from "@/api/api";
 
 export default function ServicesConfig() {
   const [services, setServices] = useState([]);
@@ -10,30 +10,17 @@ export default function ServicesConfig() {
   const [error, setError] = useState("");
   const [editData, setEditData] = useState(null);
 
-  const token = localStorage.getItem("token");
-  const api = axios.create({
-    baseURL: "http://localhost:5000/api/services",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const res = await api.get("/");
-        setServices(res.data);
-      } catch (err) {
-        setError("Erro ao carregar serviços");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchServices();
+    fetchServices()
+      .then((res) => setServices(res.data))
+      .catch(() => setError("Erro ao carregar serviços"))
+      .finally(() => setLoading(false));
   }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Excluir este serviço?")) return;
     try {
-      await api.delete(`/${id}`);
+      await deleteService(id);
       setServices((prev) => prev.filter((s) => s._id !== id));
     } catch (err) {
       alert("Erro ao excluir serviço");
@@ -42,7 +29,7 @@ export default function ServicesConfig() {
 
   const handleSaveEdit = async (updated) => {
     try {
-      const res = await api.put(`/${updated._id}`, updated);
+      const res = await updateService(updated._id, updated);
       setServices((prev) =>
         prev.map((s) => (s._id === updated._id ? res.data : s))
       );
@@ -50,7 +37,7 @@ export default function ServicesConfig() {
     } catch (err) {
       alert("Erro ao atualizar serviço");
     }
-  };
+  };  
 
   if (loading) return <p className="p-6">Carregando...</p>;
   if (error) return <p className="p-6 text-red-600">{error}</p>;

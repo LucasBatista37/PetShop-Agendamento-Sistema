@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { createService } from "@/api/api";
 
 export default function AddService() {
   const navigate = useNavigate();
-
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -12,7 +11,6 @@ export default function AddService() {
     description: "",
     extra: false,
   });
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -34,31 +32,9 @@ export default function AddService() {
       return;
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("Você precisa estar logado para adicionar serviços.");
-      return;
-    }
-
-    setLoading(true);
     try {
-      await axios.post(
-        "http://localhost:5000/api/services",
-        {
-          name: form.name,
-          description: form.description,
-          price: parseFloat(form.price),
-          duration: parseInt(form.duration, 10),
-          extra: form.extra,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
+      setLoading(true);
+      await createService(form);
       navigate("/services", { replace: true });
     } catch (err) {
       console.error(err);

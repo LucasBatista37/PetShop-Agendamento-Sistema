@@ -1,12 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import { parse, startOfWeek, getDay, startOfDay } from "date-fns";
 import ptLocale from "date-fns/locale/pt";
 import { dateFnsLocalizer } from "react-big-calendar";
 import { AppointmentTable, ViewToggle } from "@/components/Appointments";
 import CalendarComponent from "@/components/Appointments/CalendarComponent";
 import NewAppointmentModal from "@/components/Appointments/NewAppointmentModal/NewAppointmentModal";
-import { FaCalendarAlt, FaCalendarWeek } from "react-icons/fa";
+import {
+  fetchAppointments,
+  createAppointment,
+  deleteAppointment,
+  updateAppointment,
+} from "../../Api/api";
+import { ToastContainer } from "react-toastify";
+import { notifySuccess, notifyError } from "@/components/Toast";
 
 const locales = { pt: ptLocale };
 const localizer = dateFnsLocalizer({
@@ -29,85 +35,56 @@ export default function Appointments() {
   const [modalData, setModalData] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    axios
-      .get("http://localhost:5000/api/appointments", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    fetchAppointments()
       .then((res) => setAppointments(res.data))
       .catch(() => setError("Erro ao carregar agendamentos"))
       .finally(() => setLoading(false));
   }, []);
 
-  const api = axios.create({
-    baseURL: "http://localhost:5000/api/appointments",
-    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-  });
-
-  const createAppointment = async (data) => {
-    try {
-      const res = await api.post("/", {
-        petName: data.petName,
-        species: data.species,
-        breed: data.breed,
-        notes: data.notes,
-        size: data.size,
-        ownerName: data.ownerName,
-        ownerPhone: data.ownerPhone,
-        baseService: data.baseService._id,
-        extraServices: data.extraServices.map((s) => s._id),
-        date: data.date,
-        time: data.time,
-        status: "Pendente",
-      });
-      setAppointments((p) => [...p, res.data]);
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao criar agendamento");
-    }
-  };
-
-  const updateAppointment = async (id, data) => {
-    try {
-      const res = await api.put(`/${id}`, {
-        ...data,
-        baseService:
-          typeof data.baseService === "object"
-            ? data.baseService._id
-            : data.baseService,
-        extraServices: data.extraServices.map((s) =>
-          typeof s === "object" ? s._id : s
-        ),
-      });
-      setAppointments((p) => p.map((a) => (a._id === id ? res.data : a)));
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao atualizar agendamento");
-    }
-  };
-
   const patchStatus = (id, status) => {
     const appt = appointments.find((a) => a._id === id);
-    if (appt) updateAppointment(id, { ...appt, status });
+    if (appt) {
+      updateAppointment(id, { ...appt, status })
+        .then((res) => {
+          setAppointments((prev) =>
+            prev.map((a) => (a._id === id ? res.data : a))
+          );
+          notifySuccess("Status atualizado com sucesso");
+        })
+        .catch(() => notifyError("Erro ao atualizar status"));
+    }
   };
 
   const finalizeAppointment = (id) => patchStatus(id, "Finalizado");
 
-  const deleteAppointment = async (id) => {
-    if (!window.confirm("Deseja excluir este agendamento?")) return;
-    try {
-      await api.delete(`/${id}`);
-      setAppointments((prev) => prev.filter((a) => a._id !== id));
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao excluir agendamento");
-    }
-  };
-
   const handleSave = (data) =>
     modalData?._id
-      ? updateAppointment(modalData._id, data).then(() => setModalData(null))
-      : createAppointment(data).then(() => setModalData(null));
+      ? updateAppointment(modalData._id, data)
+          .then((res) => {
+            setAppointments((prev) =>
+              prev.map((a) => (a._id === modalData._id ? res.data : a))
+            );
+            notifySuccess("Agendamento atualizado com sucesso");
+            setModalData(null);
+          })
+          .catch(() => notifyError("Erro ao atualizar agendamento"))
+      : createAppointment(data)
+          .then((res) => {
+            setAppointments((prev) => [...prev, res.data]);
+            notifySuccess("Agendamento criado com sucesso");
+            setModalData(null);
+          })
+          .catch(() => notifyError("Erro ao criar agendamento"));
+
+  const handleDelete = (id) => {
+    if (!window.confirm("Deseja excluir este agendamento?")) return;
+    deleteAppointment(id)
+      .then(() => {
+        setAppointments((prev) => prev.filter((a) => a._id !== id));
+        notifySuccess("Agendamento excluído com sucesso");
+      })
+      .catch(() => notifyError("Erro ao excluir agendamento"));
+  };
 
   const today = startOfDay(new Date());
   const filtered = useMemo(() => {
@@ -157,6 +134,7 @@ export default function Appointments() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      <ToastContainer />
       <header className="mb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-semibold text-gray-800">
@@ -178,7 +156,7 @@ export default function Appointments() {
           onEdit={(appt) => setModalData(appt)}
           onCancel={(id) => patchStatus(id, "Cancelado")}
           onStatusChange={patchStatus}
-          onDelete={deleteAppointment}
+          onDelete={handleDelete}
           filterScope={filterScope}
           setFilterScope={setFilterScope}
           scopeMenuOpen={scopeMenuOpen}

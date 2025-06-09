@@ -4,7 +4,6 @@ import "./index.css";
 import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
-
 import Dashboard from "./components/Dashboard";
 import Appointments from "./components/Appointments/Appointments";
 import AddService from "./components/Services/AddService";
