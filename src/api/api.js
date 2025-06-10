@@ -1,16 +1,36 @@
+// src/utils/api.js
 import axios from "axios";
-
-const token = localStorage.getItem("token");
 
 const api = axios.create({
   baseURL: "http://localhost:5000/api",
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
 });
 
+export const setAuthToken = (token) => {
+  if (token) {
+    localStorage.setItem("token", token);
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  } else {
+    localStorage.removeItem("token");
+    delete api.defaults.headers.common["Authorization"];
+  }
+};
+
+// Interceptor para lidar com token inválido
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      setAuthToken(null);
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Funções de API para serviços e agendamentos
 export const fetchDashboardStats = () => api.get("/dashboard/stats");
 export const fetchAppointments = () => api.get("/appointments");
+
 export const createAppointment = (data) =>
   api.post("/appointments", {
     petName: data.petName,
@@ -60,3 +80,5 @@ export const createService = (data) =>
 export const updateService = (id, data) => api.put(`/services/${id}`, data);
 
 export const deleteService = (id) => api.delete(`/services/${id}`);
+
+export default api;

@@ -10,6 +10,8 @@ import AddService from "./components/Services/AddService";
 import ServicesConfig from "./components/Services/ServicesConfig";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmail from "./pages/VerifyEmail";
+import EmailVerify from "./pages/EmailVerify";
 
 function App() {
   return (
@@ -24,6 +26,8 @@ function App() {
         <Route path="/appointments" element={<Appointments />} />
         <Route path="/services" element={<ServicesConfig />} />
         <Route path="/services/new" element={<AddService />} />
+        <Route path="/verifique-email" element={<VerifyEmail />} />
+        <Route path="/email-verificado" element={<EmailVerify />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/login " replace />} />

@@ -40,8 +40,8 @@ export default function Register() {
         phone,
         password,
       });
-      localStorage.setItem("token", res.data.token);
-      navigate("/dashboard", { replace: true });
+      alert("Cadastro realizado! Verifique seu e-mail para ativar sua conta.");
+      navigate("/verifique-email", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Erro ao registrar.");
     } finally {
