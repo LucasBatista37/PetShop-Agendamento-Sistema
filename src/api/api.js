@@ -1,4 +1,3 @@
-// src/utils/api.js
 import axios from "axios";
 
 const api = axios.create({
@@ -15,7 +14,6 @@ export const setAuthToken = (token) => {
   }
 };
 
-// Interceptor para lidar com token inválido
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -27,7 +25,6 @@ api.interceptors.response.use(
   }
 );
 
-// Funções de API para serviços e agendamentos
 export const fetchDashboardStats = () => api.get("/dashboard/stats");
 export const fetchAppointments = () => api.get("/appointments");
 
@@ -80,5 +77,7 @@ export const createService = (data) =>
 export const updateService = (id, data) => api.put(`/services/${id}`, data);
 
 export const deleteService = (id) => api.delete(`/services/${id}`);
+
+export const sendSupportMessage = (data) => api.post("/support", data);
 
 export default api;

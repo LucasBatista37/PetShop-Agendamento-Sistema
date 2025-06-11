@@ -12,7 +12,7 @@ import {
   updateAppointment,
 } from "../../Api/api";
 import { ToastContainer } from "react-toastify";
-import { notifySuccess, notifyError } from "@/components/Toast";
+import { notifySuccess, notifyError } from "../../utils/Toast";
 
 const locales = { pt: ptLocale };
 const localizer = dateFnsLocalizer({
@@ -134,7 +134,6 @@ export default function Appointments() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <ToastContainer />
       <header className="mb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-semibold text-gray-800">
