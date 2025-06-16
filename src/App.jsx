@@ -15,6 +15,9 @@ import EmailVerify from "./pages/EmailVerify";
 import HelpCenter from "./components/Help/HelpCenter";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AccountSettings from "./components/Settings/Settings";
+import ForgotPassword from "./components/Settings/ForgotPassword";
+import ResetPassword from "./components/Settings/ResetPassword";
 
 function App() {
   return (
@@ -33,6 +36,9 @@ function App() {
           <Route path="/help" element={<HelpCenter />} />
           <Route path="/verifique-email" element={<VerifyEmail />} />
           <Route path="/email-verificado" element={<EmailVerify />} />
+          <Route path="/settings" element={<AccountSettings />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />
