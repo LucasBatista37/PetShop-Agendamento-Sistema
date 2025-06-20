@@ -1,67 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  FiPlus,
-  FiUsers,
-  FiClipboard,
-  FiTool,
-  FiBarChart2,
-  FiCpu,
-  FiMessageSquare,
-} from "react-icons/fi";
-
+import { FiMessageSquare } from "react-icons/fi";
 import SupportMessageModal from "@/components/Help/SupportMessageModal";
-
-const cards = [
-  {
-    id: 1,
-    title: "Primeiros Passos",
-    desc: "Saiba como fazer login, configurar sua conta e navegar pelo sistema.",
-    icon: FiPlus,
-    to: "/help/primeiros-passos",
-  },
-  {
-    id: 2,
-    title: "Gestão de Pets",
-    desc: "Cadastre pets, visualize histórico e agende atendimentos.",
-    icon: FiUsers,
-    to: "/help/gestao-pets",
-  },
-  {
-    id: 3,
-    title: "Gestão de Equipe",
-    desc: "Adicione colaboradores, defina escalas e permissões de acesso.",
-    icon: FiClipboard,
-    to: "/help/equipe",
-  },
-  {
-    id: 4,
-    title: "Controle de Estoque",
-    desc: "Acompanhe produtos e insumos em tempo real.",
-    icon: FiTool,
-    to: "/help/estoque",
-  },
-  {
-    id: 5,
-    title: "Relatórios Rápidos",
-    desc: "Gere relatórios de desempenho e financeiros com um clique.",
-    icon: FiBarChart2,
-    to: "/help/relatorios",
-  },
-  {
-    id: 6,
-    title: "Suporte Técnico",
-    desc: "Encontre soluções para problemas ou fale com o suporte.",
-    icon: FiCpu,
-    to: "/help/suporte",
-  },
-];
+import { helpTopics } from "@/data/helpData";
 
 export default function HelpCenter() {
   const [q, setQ] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
 
-  const filtered = cards.filter((c) =>
+  const filtered = helpTopics.filter((c) =>
     `${c.title} ${c.desc}`.toLowerCase().includes(q.toLowerCase())
   );
 
