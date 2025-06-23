@@ -80,4 +80,10 @@ export const deleteService = (id) => api.delete(`/services/${id}`);
 
 export const sendSupportMessage = (data) => api.post("/support", data);
 
+export const sendForgotPasswordLink = (email) =>
+  api.post("/auth/forgot-password", { email });
+
+export const resetPassword = ({ email, token, newPassword }) =>
+  api.post("/auth/reset-password", { email, token, newPassword });
+
 export default api;

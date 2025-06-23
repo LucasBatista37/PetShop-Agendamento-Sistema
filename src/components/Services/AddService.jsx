@@ -38,10 +38,13 @@ export default function AddService() {
       navigate("/services", { replace: true });
     } catch (err) {
       console.error(err);
-      setError(
+
+      const errorMsg =
+        err.response?.data?.errors?.[0]?.msg ||
         err.response?.data?.message ||
-          "Erro ao adicionar serviço. Tente novamente."
-      );
+        "Erro ao adicionar serviço. Tente novamente.";
+
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

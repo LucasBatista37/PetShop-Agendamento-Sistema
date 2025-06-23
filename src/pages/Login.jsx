@@ -117,7 +117,7 @@ export default function Login() {
         </button>
       )}
 
-      <div className="flex items-center my-8 gap-4">
+      {/* <div className="flex items-center my-8 gap-4">
         <hr className="flex-1 border-gray-300" />
         <span className="text-sm text-gray-500 whitespace-nowrap">
           ou entre com
@@ -128,7 +128,6 @@ export default function Login() {
       <div className="flex justify-center gap-5">
         {[
           { src: "/google-icon.svg", alt: "Google" },
-          { src: "/apple-icon.svg", alt: "Apple" },
         ].map(({ src, alt }) => (
           <button
             key={alt}
@@ -137,7 +136,15 @@ export default function Login() {
             <img src={src} alt={alt} className="w-5 h-5" />
           </button>
         ))}
-      </div>
+      </div> */}
+
+      <button
+        type="button"
+        onClick={() => navigate("/forgot-password")}
+        className="mt-4 w-full text-center text-indigo-600 hover:underline"
+      >
+        Esqueci minha senha
+      </button>
 
       <p className="mt-10 text-sm text-center text-gray-500">
         Não possui conta?{" "}

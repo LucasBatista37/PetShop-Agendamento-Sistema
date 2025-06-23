@@ -9,6 +9,7 @@ export default function ServicesConfig() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editData, setEditData] = useState(null);
+  const [editError, setEditError] = useState("");
 
   useEffect(() => {
     fetchServices()
@@ -28,6 +29,7 @@ export default function ServicesConfig() {
   };
 
   const handleSaveEdit = async (updated) => {
+    setEditError("");
     try {
       const res = await updateService(updated._id, updated);
       setServices((prev) =>
@@ -35,9 +37,14 @@ export default function ServicesConfig() {
       );
       setEditData(null);
     } catch (err) {
-      alert("Erro ao atualizar serviço");
+      console.error(err);
+      const errorMsg =
+        err.response?.data?.errors?.[0]?.msg ||
+        err.response?.data?.message ||
+        "Erro ao atualizar serviço";
+      setEditError(errorMsg);
     }
-  };  
+  };
 
   if (loading) return <p className="p-6">Carregando...</p>;
   if (error) return <p className="p-6 text-red-600">{error}</p>;
@@ -63,7 +70,10 @@ export default function ServicesConfig() {
               key={s._id}
               service={s}
               onDelete={() => handleDelete(s._id)}
-              onEdit={() => setEditData(s)}
+              onEdit={() => {
+                setEditData(s);
+                setEditError("");
+              }}
             />
           ))}
         </div>
@@ -74,19 +84,35 @@ export default function ServicesConfig() {
           service={editData}
           onClose={() => setEditData(null)}
           onSave={handleSaveEdit}
+          error={editError}
         />
       )}
     </div>
   );
 }
 
+// ✅ ServiceCard revisado COM TRUNCATE + TOOLTIP + CSS básico
 function ServiceCard({ service, onDelete, onEdit }) {
+  // Função para truncar texto JS
+  const truncate = (text, maxLength) => {
+    if (!text) return "";
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  };
+
   return (
     <div className="bg-white border rounded-lg shadow-sm p-4 flex flex-col justify-between">
       <div>
-        <h3 className="text-lg font-semibold text-gray-800">{service.name}</h3>
-        <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">
-          {service.description}
+        <h3
+          className="text-lg font-semibold text-gray-800"
+          title={service.name}
+        >
+          {service.name}
+        </h3>
+        <p
+          className="mt-1 text-sm text-gray-600 overflow-hidden break-words"
+          title={service.description}
+        >
+          {truncate(service.description, 150)}
         </p>
       </div>
       <div className="mt-4 flex items-center justify-between">

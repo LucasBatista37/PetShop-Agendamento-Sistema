@@ -23,11 +23,17 @@ export default function SupportMessageModal({ isOpen, onClose }) {
       }
 
       await sendSupportMessage(form);
+
       notifySuccess("Mensagem enviada! Responderemos em breve 🙂");
       setForm({ name: "", email: "", subject: "", message: "" });
       onClose();
-    } catch {
-      notifyError("Erro ao enviar. Tente novamente.");
+    } catch (err) {
+      console.error("Erro ao enviar suporte:", err);
+      if (err.response?.data?.message) {
+        notifyError(err.response.data.message);
+      } else {
+        notifyError("Erro ao enviar. Tente novamente.");
+      }
     } finally {
       setLoading(false);
     }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom"; 
+import { useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "@/utils/Toast";
+import { resetPassword } from "@/api/api";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -13,7 +14,7 @@ export default function ResetPassword() {
   const query = useQuery();
   const token = query.get("token");
   const email = query.get("email");
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -24,7 +25,7 @@ export default function ResetPassword() {
   useEffect(() => {
     if (!token || !email) {
       notifyError("Token ou e-mail inválido");
-      navigate("/login"); 
+      navigate("/login");
     }
   }, [token, email, navigate]);
 
@@ -35,13 +36,9 @@ export default function ResetPassword() {
     }
     setLoading(true);
     try {
-      await axios.post(`http://localhost:5000/api/auth/reset-password`, {
-        email,
-        token,
-        newPassword: password,
-      });
+      await resetPassword({ email, token, newPassword: password });
       notifySuccess("Senha redefinida com sucesso!");
-      navigate("/login"); 
+      navigate("/login");
     } catch (err) {
       notifyError(err.response?.data?.message || "Erro ao redefinir senha");
     } finally {
@@ -57,7 +54,9 @@ export default function ResetPassword() {
       </h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="relative">
-          <label className="block text-sm font-medium text-gray-600">Senha</label>
+          <label className="block text-sm font-medium text-gray-600">
+            Senha
+          </label>
           <input
             type={showPassword ? "text" : "password"}
             value={password}
