@@ -73,10 +73,10 @@ export default function AppointmentDetails({
     <Dialog open={open} onClose={onClose} className="fixed inset-0 z-50 flex">
       <div className="fixed inset-0 bg-black/40 z-40" aria-hidden="true" />
 
-      <Dialog.Panel className="relative z-50 ml-auto w-full max-w-md h-full bg-white flex flex-col shadow-2xl">
-        <header className="sticky top-0 flex items-center justify-between px-6 py-4 bg-white/95 border-b">
+      <Dialog.Panel className="relative z-50 ml-auto w-full sm:max-w-md h-full sm:h-auto bg-white flex flex-col shadow-2xl">
+        <header className="sticky top-0 flex items-center justify-between px-4 sm:px-6 py-4 bg-white/95 border-b">
           <div>
-            <h3 className="font-semibold text-gray-800">
+            <h3 className="font-semibold text-gray-800 text-base sm:text-lg">
               {formatDate(date)} • {time}
             </h3>
             <span
@@ -94,7 +94,8 @@ export default function AppointmentDetails({
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 text-sm">
+        {/* Conteúdo com scroll */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-6 text-sm">
           <Section title="Informações do Pet">
             <Item
               icon="🐾"
@@ -145,12 +146,12 @@ export default function AppointmentDetails({
           </p>
         </div>
 
-        <footer className="px-6 py-4 border-t flex flex-col gap-3">
+        <footer className="px-4 sm:px-6 py-4 border-t flex flex-col gap-3 sticky bottom-0 bg-white/95">
           <a
             href={`https://wa.me/${whatsappNumber}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 flex items-center justify-center gap-2"
+            className="w-full bg-green-500 text-white py-3 rounded-md hover:bg-green-600 flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             <FaWhatsapp /> WhatsApp
           </a>
@@ -160,7 +161,7 @@ export default function AppointmentDetails({
               onFinalize(_id);
               onClose();
             }}
-            className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 flex items-center justify-center gap-2"
+            className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             <FaCheckCircle /> Finalizar
           </button>

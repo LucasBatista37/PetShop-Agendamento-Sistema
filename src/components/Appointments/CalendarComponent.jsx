@@ -9,7 +9,8 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 const locales = { "pt-BR": ptBR };
 const localizer = dateFnsLocalizer({
   format,
-  parse: (value, formatStr) => parse(value, formatStr, new Date(), { locale: ptBR }),
+  parse: (value, formatStr) =>
+    parse(value, formatStr, new Date(), { locale: ptBR }),
   startOfWeek: (date) => startOfWeek(date, { locale: ptBR }),
   getDay,
   locales,
@@ -18,11 +19,14 @@ const localizer = dateFnsLocalizer({
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const ToolbarBtn = ({ children, onClick, primary, active }) => {
-  let base = "px-3 py-1.5 rounded text-sm flex items-center gap-1 transition-colors";
+  let base =
+    "px-3 py-1.5 rounded text-sm flex items-center gap-1 transition-colors";
   if (primary)
-    base += " bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm font-medium";
+    base +=
+      " bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm font-medium";
   else if (active)
-    base += " bg-indigo-100 text-indigo-700 font-medium border border-indigo-200";
+    base +=
+      " bg-indigo-100 text-indigo-700 font-medium border border-indigo-200";
   else base += " bg-white text-gray-700 hover:bg-gray-100 border";
 
   return (
@@ -53,11 +57,17 @@ const CustomToolbar = ({ label, onNavigate, onView, view }) => {
         <ToolbarBtn onClick={() => onNavigate("NEXT")}>Próximo</ToolbarBtn>
       </div>
 
-      <h3 className="text-lg font-semibold text-gray-800 text-center">{label}</h3>
+      <h3 className="text-lg font-semibold text-gray-800 text-center">
+        {label}
+      </h3>
 
       <div className="flex gap-2">
         {views.map((v) => (
-          <ToolbarBtn key={v.value} active={view === v.value} onClick={() => onView(v.value)}>
+          <ToolbarBtn
+            key={v.value}
+            active={view === v.value}
+            onClick={() => onView(v.value)}
+          >
             {v.label}
           </ToolbarBtn>
         ))}
@@ -101,10 +111,12 @@ export default function CalendarComponent({
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
       if (filterScope === "future") {
-        if (new Date(event.start) < new Date(today.setHours(0, 0, 0, 0))) return false;
+        if (new Date(event.start) < new Date(today.setHours(0, 0, 0, 0)))
+          return false;
       }
 
-      if (filterStatus !== "Todos" && event.status !== filterStatus) return false;
+      if (filterStatus !== "Todos" && event.status !== filterStatus)
+        return false;
 
       const term = debouncedSearch.toLowerCase();
       return (
@@ -180,17 +192,30 @@ export default function CalendarComponent({
           formats={{
             dateFormat: "dd",
             dayFormat: (date) => format(date, "dd/MM", { locale: ptBR }),
-            weekdayFormat: (date) => capitalize(format(date, "EEEE", { locale: ptBR })),
-            monthHeaderFormat: (date) => capitalize(format(date, "MMMM yyyy", { locale: ptBR })),
-            dayHeaderFormat: (date) => capitalize(format(date, "EEEE, dd MMMM", { locale: ptBR })),
+            weekdayFormat: (date) =>
+              capitalize(format(date, "EEEE", { locale: ptBR })),
+            monthHeaderFormat: (date) =>
+              capitalize(format(date, "MMMM yyyy", { locale: ptBR })),
+            dayHeaderFormat: (date) =>
+              capitalize(format(date, "EEEE, dd MMMM", { locale: ptBR })),
             dayRangeHeaderFormat: ({ start, end }) =>
-              `${capitalize(format(start, "dd MMMM", { locale: ptBR }))} — ${capitalize(format(end, "dd MMMM", { locale: ptBR }))}`,
+              `${capitalize(
+                format(start, "dd MMMM", { locale: ptBR })
+              )} — ${capitalize(format(end, "dd MMMM", { locale: ptBR }))}`,
             agendaHeaderFormat: ({ start, end }) =>
-              `${format(start, "dd/MM/yyyy", { locale: ptBR })} - ${format(end, "dd/MM/yyyy", { locale: ptBR })}`,
+              `${format(start, "dd/MM/yyyy", { locale: ptBR })} - ${format(
+                end,
+                "dd/MM/yyyy",
+                { locale: ptBR }
+              )}`,
             agendaDateFormat: (date) => format(date, "dd/MM", { locale: ptBR }),
             agendaTimeFormat: (date) => format(date, "HH:mm", { locale: ptBR }),
             agendaTimeRangeFormat: ({ start, end }) =>
-              `${format(start, "HH:mm", { locale: ptBR })} - ${format(end, "HH:mm", { locale: ptBR })}`,
+              `${format(start, "HH:mm", { locale: ptBR })} - ${format(
+                end,
+                "HH:mm",
+                { locale: ptBR }
+              )}`,
           }}
         />
       </div>

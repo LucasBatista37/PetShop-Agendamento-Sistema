@@ -1,7 +1,7 @@
 import React from "react";
 import IconButton from "../IconButton";
 import { FaEye, FaEdit, FaTrash, FaEllipsisV } from "react-icons/fa";
-import { format, parseISO } from "date-fns"; 
+import { format, parseISO } from "date-fns";
 
 export default function TableRow({
   appointment,
@@ -50,13 +50,11 @@ export default function TableRow({
 
   return (
     <tr className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-      <td className="px-6 py-4 text-sm text-gray-500">{index + 1}</td>
-
-      <td className="px-6 py-4 font-medium text-gray-800" title={petName}>
+      <td className="px-4 py-2 text-sm text-gray-500">{index + 1}</td>
+      <td className="px-4 py-2 font-medium text-gray-800" title={petName}>
         {truncate(petName, 10)}
       </td>
-
-      <td className="px-6 py-4">
+      <td className="px-4 py-2">
         <div className="flex flex-col">
           <span className="text-sm text-gray-800" title={ownerName}>
             {truncate(ownerName, 15)}
@@ -64,8 +62,7 @@ export default function TableRow({
           <span className="text-xs text-gray-400">{ownerPhone}</span>
         </div>
       </td>
-
-      <td className="px-6 py-4">
+      <td className="px-4 py-2">
         <div className="flex flex-col">
           <span className="text-sm text-gray-800" title={baseServiceName}>
             {truncate(baseServiceName, 30) || "—"}
@@ -77,24 +74,20 @@ export default function TableRow({
           )}
         </div>
       </td>
-
-      <td className="px-6 py-4 text-sm text-gray-800">
+      <td className="px-4 py-2 text-sm text-gray-800 hidden sm:table-cell">
         {format(parseISO(date), "dd/MM/yyyy")} às {time}
       </td>
-
-      <td className="px-6 py-4 text-sm text-gray-800">
+      <td className="px-4 py-2 text-sm text-gray-800 hidden lg:table-cell">
         {price ? `R$ ${price}` : "—"}
       </td>
-
-      <td className="px-6 py-4">
+      <td className="px-4 py-2">
         <span
           className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${statusClass}`}
         >
           {status}
         </span>
       </td>
-
-      <td className="px-6 py-4">
+      <td className="px-4 py-2">
         <div className="relative inline-flex items-center gap-2">
           <IconButton
             title="Visualizar"
@@ -147,3 +140,5 @@ export default function TableRow({
     </tr>
   );
 }
+
+

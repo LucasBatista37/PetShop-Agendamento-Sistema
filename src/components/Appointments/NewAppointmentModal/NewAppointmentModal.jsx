@@ -178,36 +178,50 @@ export default function NewAppointmentModal({
     >
       <div className="fixed inset-0 bg-black/20" aria-hidden="true" />
 
-      <Dialog.Panel className="relative w-full max-w-lg bg-white rounded-lg shadow-lg p-6 space-y-6">
-        <Dialog.Title className="text-xl font-semibold text-gray-800">
-          {initialData?._id ? "Editar Agendamento" : "Novo Agendamento"}
-        </Dialog.Title>
+      <Dialog.Panel className="relative w-full sm:max-w-lg h-full sm:h-auto bg-white flex flex-col rounded-none sm:rounded-lg shadow-lg">
+        {/* Cabeçalho fixo — adiciona borda superior arredondada em sm */}
+        <header className="sticky top-0 px-4 sm:px-6 py-4 bg-white/95 z-10 flex items-center justify-between rounded-none sm:rounded-t-lg">
+          <Dialog.Title className="text-lg sm:text-xl font-semibold text-gray-800">
+            {initialData?._id ? "Editar Agendamento" : "Novo Agendamento"}
+          </Dialog.Title>
 
-        {step === 0 && (
-          <StepPet
-            data={formData.pet}
-            onChange={(d) => setFormData((f) => ({ ...f, pet: d }))}
-            errors={errors}
-          />
-        )}
-        {step === 1 && (
-          <StepService
-            data={formData.service}
-            onChange={(d) => setFormData((f) => ({ ...f, service: d }))}
-            errors={errors}
-          />
-        )}
-        {step === 2 && (
-          <StepSchedule
-            data={formData.schedule}
-            freeTimes={freeTimes}
-            onChange={(d) => setFormData((f) => ({ ...f, schedule: d }))}
-            errors={errors}
-          />
-        )}
-        {step === 3 && <StepReview data={formData} />}
+          <button
+            onClick={onClose}
+            className="p-2 rounded hover:bg-gray-100 text-gray-500"
+            aria-label="Fechar"
+          >
+            ✕
+          </button>
+        </header>
 
-        <div className="flex justify-between pt-4 border-t">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-6">
+          {step === 0 && (
+            <StepPet
+              data={formData.pet}
+              onChange={(d) => setFormData((f) => ({ ...f, pet: d }))}
+              errors={errors}
+            />
+          )}
+          {step === 1 && (
+            <StepService
+              data={formData.service}
+              onChange={(d) => setFormData((f) => ({ ...f, service: d }))}
+              errors={errors}
+            />
+          )}
+          {step === 2 && (
+            <StepSchedule
+              data={formData.schedule}
+              freeTimes={freeTimes}
+              onChange={(d) => setFormData((f) => ({ ...f, schedule: d }))}
+              errors={errors}
+            />
+          )}
+          {step === 3 && <StepReview data={formData} />}
+        </div>
+
+        {/* Rodapé fixo — adiciona borda inferior arredondada em sm */}
+        <footer className="sticky bottom-0 px-4 sm:px-6 py-4 bg-white/95 flex justify-between rounded-none sm:rounded-b-lg">
           <button
             onClick={back}
             disabled={step === 0}
@@ -231,7 +245,7 @@ export default function NewAppointmentModal({
               <FaCheck /> Salvar
             </button>
           )}
-        </div>
+        </footer>
       </Dialog.Panel>
     </Dialog>
   );

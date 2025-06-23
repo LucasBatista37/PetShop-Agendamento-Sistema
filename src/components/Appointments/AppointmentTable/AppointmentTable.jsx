@@ -67,43 +67,102 @@ export default function AppointmentTable({
         setView={setView}
       />
 
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            <th className="px-6 py-3">#</th>
-            <th className="px-6 py-3">Pet</th>
-            <th className="px-6 py-3">Dono</th>
-            <th className="px-6 py-3">Serviços</th>
-            <th className="px-6 py-3">Data / Hora</th>
-            <th className="px-6 py-3">Preço</th>
-            <th className="px-6 py-3">Status</th>
-            <th className="px-6 py-3">Ações</th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {paginatedData.length === 0 ? (
-            <tr>
-              <td colSpan={8} className="px-6 py-4 text-center text-gray-400">
-                Nenhum agendamento encontrado.
-              </td>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200 hidden md:table">
+          <thead className="bg-gray-50">
+            <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-4 py-2">#</th>
+              <th className="px-4 py-2">Pet</th>
+              <th className="px-4 py-2">Dono</th>
+              <th className="px-4 py-2 hidden md:table-cell">Serviços</th>
+              <th className="px-4 py-2 hidden sm:table-cell">Data / Hora</th>
+              <th className="px-4 py-2 hidden lg:table-cell">Preço</th>
+              <th className="px-4 py-2">Status</th>
+              <th className="px-4 py-2">Ações</th>
             </tr>
-          ) : (
-            paginatedData.map((appointment, idx) => (
-              <TableRow
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {paginatedData.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-2 text-center text-gray-400">
+                  Nenhum agendamento encontrado.
+                </td>
+              </tr>
+            ) : (
+              paginatedData.map((appointment, idx) => (
+                <TableRow
+                  key={appointment._id}
+                  appointment={appointment}
+                  index={startIndex + idx}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onStatusChange={onStatusChange}
+                  setSelected={setSelected}
+                  statusMenuOpen={statusMenuOpen}
+                  setStatusMenuOpen={setStatusMenuOpen}
+                />
+              ))
+            )}
+          </tbody>
+        </table>
+
+        {/* Mobile cards */}
+        {/* Mobile cards */}
+        <div className="md:hidden space-y-4 px-4 py-2">
+          {paginatedData.map((appointment, idx) => {
+            const statusClass =
+              {
+                Confirmado: "bg-blue-100 text-blue-700",
+                Pendente: "bg-yellow-100 text-yellow-700",
+                Cancelado: "bg-red-100 text-red-700",
+                Finalizado: "bg-green-100 text-green-700",
+              }[appointment.status] || "bg-gray-100 text-gray-700";
+
+            return (
+              <div
                 key={appointment._id}
-                appointment={appointment}
-                index={startIndex + idx}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onStatusChange={onStatusChange}
-                setSelected={setSelected}
-                statusMenuOpen={statusMenuOpen}
-                setStatusMenuOpen={setStatusMenuOpen}
-              />
-            ))
-          )}
-        </tbody>
-      </table>
+                onClick={() => setSelected(appointment)} 
+                className="bg-white rounded-lg shadow p-4 cursor-pointer" 
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-gray-800">
+                    {appointment.petName}
+                  </span>
+                  <span
+                    className={`text-xs font-semibold px-2 py-1 rounded-full ${statusClass}`}
+                  >
+                    {appointment.status}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-600 mb-2">
+                  Dono: {appointment.ownerName}
+                </div>
+                <div className="text-sm text-gray-600 mb-2">
+                  Data: {format(parseISO(appointment.date), "dd/MM/yyyy")} às{" "}
+                  {appointment.time}
+                </div>
+                <div
+                  className="flex gap-2"
+                  onClick={(e) => e.stopPropagation()} 
+                >
+                  <button
+                    onClick={() => onEdit(appointment)}
+                    className="flex-1 text-center py-1 bg-blue-100 rounded hover:bg-blue-200"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => onDelete(appointment._id)}
+                    className="flex-1 text-center py-1 bg-red-100 rounded hover:bg-red-200"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       <Pagination
         rowsPerPage={rowsPerPage}
