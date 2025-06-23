@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import EditServiceModal from "./EditServiceModal";
+import AddServiceModal from "./AddServiceModal";
 import { fetchServices, deleteService, updateService } from "@/api/api";
 
 export default function ServicesConfig() {
@@ -10,6 +10,7 @@ export default function ServicesConfig() {
   const [error, setError] = useState("");
   const [editData, setEditData] = useState(null);
   const [editError, setEditError] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false); 
 
   useEffect(() => {
     fetchServices()
@@ -46,6 +47,10 @@ export default function ServicesConfig() {
     }
   };
 
+  const handleAddService = (newService) => {
+    setServices((prev) => [newService, ...prev]);
+  };
+
   if (loading) return <p className="p-6">Carregando...</p>;
   if (error) return <p className="p-6 text-red-600">{error}</p>;
 
@@ -53,12 +58,12 @@ export default function ServicesConfig() {
     <div className="p-6 bg-gray-50 min-h-screen">
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-semibold text-gray-800">Serviços</h1>
-        <Link
-          to="/services/new"
+        <button
+          onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
         >
           <FaPlus /> Novo Serviço
-        </Link>
+        </button>
       </header>
 
       {services.length === 0 ? (
@@ -87,13 +92,17 @@ export default function ServicesConfig() {
           error={editError}
         />
       )}
+
+      <AddServiceModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSave={handleAddService}
+      />
     </div>
   );
 }
 
-// ✅ ServiceCard revisado COM TRUNCATE + TOOLTIP + CSS básico
 function ServiceCard({ service, onDelete, onEdit }) {
-  // Função para truncar texto JS
   const truncate = (text, maxLength) => {
     if (!text) return "";
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;

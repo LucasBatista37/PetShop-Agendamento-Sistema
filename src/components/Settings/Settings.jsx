@@ -1,40 +1,44 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "@/utils/Toast";
-
-const API_URL = "http://localhost:5000/api";
+import api, { setAuthToken } from "@/api/api";
 
 export default function AccountSettings() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({ name: "", email: "", phone: "" });
   const [form, setForm] = useState({ name: "", phone: "" });
-  const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
+  const [passwords, setPasswords] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  // Inicializa token e redireciona se não autenticado
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    if (!token) {
+      navigate("/login");
     } else {
-      window.location.href = "/login";
+      setAuthToken(token);
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const res = await axios.get(`${API_URL}/auth/me`);
-        const userData = res.data.user || res.data;
-        const { name = "", email = "", phone = "" } = userData;
+        const { data } = await api.get("/auth/me");
+        const user = data.user || data;
+        const { name = "", email = "", phone = "" } = user;
         setProfile({ name, email, phone });
         setForm({ name, phone });
-      } catch {
-        notifyError("Erro ao carregar perfil");
+      } catch (err) {
+        notifyError(err.response?.data?.message || "Erro ao carregar perfil");
       } finally {
         setLoading(false);
       }
@@ -45,9 +49,9 @@ export default function AccountSettings() {
   const handleUpdate = async () => {
     setLoading(true);
     try {
-      const res = await axios.put(`${API_URL}/auth/me`, form);
-      const userData = res.data.user || res.data;
-      const { name = "", email = "", phone = "" } = userData;
+      const { data } = await api.put("/auth/me", form);
+      const user = data.user || data;
+      const { name = "", email = "", phone = "" } = user;
       setProfile({ name, email, phone });
       notifySuccess("Perfil atualizado com sucesso");
     } catch (err) {
@@ -63,7 +67,7 @@ export default function AccountSettings() {
     }
     setLoading(true);
     try {
-      await axios.put(`${API_URL}/auth/change-password`, {
+      await api.put("/auth/change-password", {
         currentPassword: passwords.current,
         newPassword: passwords.new,
       });
@@ -77,33 +81,48 @@ export default function AccountSettings() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Tem certeza que deseja excluir sua conta? Esta ação é irreversível.")) return;
+    if (
+      !window.confirm(
+        "Tem certeza que deseja excluir sua conta? Esta ação é irreversível."
+      )
+    )
+      return;
     setLoading(true);
     try {
-      await axios.delete(`${API_URL}/auth/me`);
+      await api.delete("/auth/me");
       notifySuccess("Conta excluída com sucesso");
-      window.location.href = "/login";
-    } catch {
-      notifyError("Erro ao excluir conta");
+      navigate("/login", { replace: true });
+    } catch (err) {
+      notifyError(err.response?.data?.message || "Erro ao excluir conta");
     }
   };
 
   if (loading) {
-    return <p className="p-6 text-gray-500 text-center">Carregando configurações...</p>;
+    return (
+      <p className="p-6 text-gray-500 text-center">
+        Carregando configurações...
+      </p>
+    );
   }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
       <ToastContainer position="top-right" autoClose={3000} />
       <header className="mb-8">
-        <h1 className="text-3xl font-semibold text-gray-800">Configurações de Conta</h1>
+        <h1 className="text-3xl font-semibold text-gray-800">
+          Configurações de Conta
+        </h1>
       </header>
 
       <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-        <h2 className="text-xl font-medium text-gray-700 mb-4">Informações Pessoais</h2>
+        <h2 className="text-xl font-medium text-gray-700 mb-4">
+          Informações Pessoais
+        </h2>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-gray-600">Nome</label>
+            <label className="block text-sm font-medium text-gray-600">
+              Nome
+            </label>
             <input
               type="text"
               value={form.name}
@@ -112,7 +131,9 @@ export default function AccountSettings() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600">E-mail</label>
+            <label className="block text-sm font-medium text-gray-600">
+              E-mail
+            </label>
             <input
               type="email"
               value={profile.email}
@@ -121,11 +142,15 @@ export default function AccountSettings() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600">Telefone</label>
+            <label className="block text-sm font-medium text-gray-600">
+              Telefone
+            </label>
             <input
               type="text"
               value={form.phone}
-              onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, phone: e.target.value }))
+              }
               className="mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
@@ -139,14 +164,20 @@ export default function AccountSettings() {
       </section>
 
       <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mb-6">
-        <h2 className="text-xl font-medium text-gray-700 mb-4">Alterar Senha</h2>
+        <h2 className="text-xl font-medium text-gray-700 mb-4">
+          Alterar Senha
+        </h2>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-600">Senha Atual</label>
+            <label className="block text-sm font-medium text-gray-600">
+              Senha Atual
+            </label>
             <input
               type={showCurrent ? "text" : "password"}
               value={passwords.current}
-              onChange={(e) => setPasswords((p) => ({ ...p, current: e.target.value }))}
+              onChange={(e) =>
+                setPasswords((p) => ({ ...p, current: e.target.value }))
+              }
               placeholder="Digite sua senha atual"
               className="mt-1 w-full border rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
@@ -161,11 +192,15 @@ export default function AccountSettings() {
           </div>
 
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-600">Nova Senha</label>
+            <label className="block text-sm font-medium text-gray-600">
+              Nova Senha
+            </label>
             <input
               type={showNew ? "text" : "password"}
               value={passwords.new}
-              onChange={(e) => setPasswords((p) => ({ ...p, new: e.target.value }))}
+              onChange={(e) =>
+                setPasswords((p) => ({ ...p, new: e.target.value }))
+              }
               placeholder="Digite a nova senha"
               className="mt-1 w-full border rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
@@ -180,11 +215,15 @@ export default function AccountSettings() {
           </div>
 
           <div className="relative md:col-span-2">
-            <label className="block text-sm font-medium text-gray-600">Confirmar Nova Senha</label>
+            <label className="block text-sm font-medium text-gray-600">
+              Confirmar Nova Senha
+            </label>
             <input
               type={showConfirm ? "text" : "password"}
               value={passwords.confirm}
-              onChange={(e) => setPasswords((p) => ({ ...p, confirm: e.target.value }))}
+              onChange={(e) =>
+                setPasswords((p) => ({ ...p, confirm: e.target.value }))
+              }
               placeholder="Confirme a nova senha"
               className="mt-1 w-full border rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
@@ -200,7 +239,10 @@ export default function AccountSettings() {
         </div>
 
         <p className="text-sm text-gray-600 mt-2">
-          <Link to="/forgot-password" className="text-indigo-600 hover:underline">
+          <Link
+            to="/forgot-password"
+            className="text-indigo-600 hover:underline"
+          >
             Esqueci minha senha
           </Link>
         </p>
@@ -215,7 +257,9 @@ export default function AccountSettings() {
 
       <section className="bg-white rounded-xl p-6 shadow-sm border border-red-100">
         <h2 className="text-xl font-medium text-red-600 mb-4">Excluir Conta</h2>
-        <p className="text-sm text-gray-600 mb-4">Esta ação é permanente e apagará todos os seus dados.</p>
+        <p className="text-sm text-gray-600 mb-4">
+          Esta ação é permanente e apagará todos os seus dados.
+        </p>
         <button
           onClick={handleDelete}
           className="bg-red-600 px-6 py-2 text-white rounded-md hover:bg-red-700 transition"

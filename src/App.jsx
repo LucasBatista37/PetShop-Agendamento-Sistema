@@ -6,7 +6,7 @@ import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import Dashboard from "./components/Dashboard";
 import Appointments from "./components/Appointments/Appointments";
-import AddService from "./components/Services/AddService";
+import AddServiceModal from "./components/Services/AddServiceModal";
 import ServicesConfig from "./components/Services/ServicesConfig";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -33,7 +33,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/services" element={<ServicesConfig />} />
-          <Route path="/services/new" element={<AddService />} />
+          <Route path="/services/new" element={<AddServiceModal />} />
           <Route path="/help" element={<HelpCenter />} />
           <Route path="/help/:slug" element={<HelpDetail />} />
           <Route path="/verifique-email" element={<VerifyEmail />} />

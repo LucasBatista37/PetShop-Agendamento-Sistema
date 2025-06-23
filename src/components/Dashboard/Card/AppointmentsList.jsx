@@ -1,33 +1,35 @@
+import React, { useState } from "react";
 import { format } from "date-fns";
-import { useState } from "react";
+import { ptBR } from "date-fns/locale";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const ITEMS_PER_PAGE = 3;
 
-const AppointmentsList = ({ date, appointments = [] }) => {
+export default function AppointmentsList({ date, appointments = [] }) {
   const selectedDate = format(date, "yyyy-MM-dd");
-
   const filtered = appointments.filter(
     (a) => format(new Date(a.date), "yyyy-MM-dd") === selectedDate
   );
 
   const [page, setPage] = useState(0);
-
   const maxPage = Math.floor((filtered.length - 1) / ITEMS_PER_PAGE);
-
   const paginatedItems = filtered.slice(
     page * ITEMS_PER_PAGE,
     page * ITEMS_PER_PAGE + ITEMS_PER_PAGE
   );
-
   const handlePrev = () => setPage((p) => Math.max(0, p - 1));
   const handleNext = () => setPage((p) => Math.min(maxPage, p + 1));
+
+  const full = format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+  const [dayPart, monthPart, yearPart] = full.split(" de ");
+  const monthCap = monthPart.charAt(0).toUpperCase() + monthPart.slice(1);
+  const headerDate = `${dayPart} de ${monthCap} de ${yearPart}`;
 
   return (
     <>
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-sm font-semibold text-gray-800">
-          Agendamentos de {format(date, "dd/MM/yyyy")}
+          Agendamentos de {headerDate}
         </h2>
         {filtered.length > ITEMS_PER_PAGE && (
           <div className="flex gap-2">
@@ -69,6 +71,4 @@ const AppointmentsList = ({ date, appointments = [] }) => {
       </ul>
     </>
   );
-};
-
-export default AppointmentsList;
+}

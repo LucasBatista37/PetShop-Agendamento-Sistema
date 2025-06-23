@@ -179,7 +179,6 @@ export default function NewAppointmentModal({
       <div className="fixed inset-0 bg-black/20" aria-hidden="true" />
 
       <Dialog.Panel className="relative w-full sm:max-w-lg h-full sm:h-auto bg-white flex flex-col rounded-none sm:rounded-lg shadow-lg">
-        {/* Cabeçalho fixo — adiciona borda superior arredondada em sm */}
         <header className="sticky top-0 px-4 sm:px-6 py-4 bg-white/95 z-10 flex items-center justify-between rounded-none sm:rounded-t-lg">
           <Dialog.Title className="text-lg sm:text-xl font-semibold text-gray-800">
             {initialData?._id ? "Editar Agendamento" : "Novo Agendamento"}
@@ -220,7 +219,6 @@ export default function NewAppointmentModal({
           {step === 3 && <StepReview data={formData} />}
         </div>
 
-        {/* Rodapé fixo — adiciona borda inferior arredondada em sm */}
         <footer className="sticky bottom-0 px-4 sm:px-6 py-4 bg-white/95 flex justify-between rounded-none sm:rounded-b-lg">
           <button
             onClick={back}

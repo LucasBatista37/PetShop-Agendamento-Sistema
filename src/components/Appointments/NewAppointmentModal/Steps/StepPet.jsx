@@ -38,9 +38,10 @@ export default function StepPet({ data, onChange, errors = {} }) {
               onChange={(e) => onChange({ ...data, size: e.target.value })}
               className="border p-2 rounded w-full"
             >
-              <option>Pequeno</option>
-              <option>Médio</option>
-              <option>Grande</option>
+              <option value="">Selecione</option>
+              <option value="Pequeno">Pequeno</option>
+              <option value="Medio">Médio</option>
+              <option value="Grande">Grande</option>
             </select>
           </div>
         </div>

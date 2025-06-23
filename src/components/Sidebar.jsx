@@ -49,7 +49,7 @@ export default function Sidebar({ isOpen, onClose }) {
       } md:translate-x-0`}
     >
       <div className="px-6 pt-6 flex justify-between items-center md:block">
-        <div className="text-2xl font-bold text-indigo-600">PetAgende</div>
+        <div className="text-2xl font-bold text-indigo-600">PetCare</div>
         <button className="md:hidden text-gray-500" onClick={onClose}>
           <FaTimes className="w-5 h-5" />
         </button>

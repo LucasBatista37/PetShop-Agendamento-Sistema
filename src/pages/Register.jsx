@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaUser, FaEnvelope, FaPhoneAlt, FaLock } from "react-icons/fa";
-import Modal from "@/components/Modal"; // ajuste o caminho se necessário
+import Modal from "@/components/Modal";
+import api, { setAuthToken } from "@/api/api";
+import { notifySuccess, notifyError } from "@/utils/Toast";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -17,7 +19,6 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Estados para abrir modais
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
 
@@ -53,16 +54,21 @@ export default function Register() {
 
     try {
       setLoading(true);
-      await axios.post("http://localhost:5000/api/auth/register", {
+      const { data } = await api.post("/auth/register", {
         name,
         email,
         phone,
         password,
       });
-      alert("Cadastro realizado! Verifique seu e-mail para ativar sua conta.");
+      if (data.token) {
+        setAuthToken(data.token);
+      }
+      notifySuccess(
+        "Cadastro realizado! Verifique seu e-mail para ativar sua conta."
+      );
       navigate("/verifique-email", { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Erro ao registrar.");
+      notifyError(err.response?.data?.message || "Erro ao registrar.");
     } finally {
       setLoading(false);
     }
@@ -174,7 +180,6 @@ export default function Register() {
           </div>
         </div>
 
-        {/* ✅ Checkbox de aceitação */}
         <div className="flex items-start">
           <input
             type="checkbox"
@@ -228,7 +233,6 @@ export default function Register() {
         </span>
       </p>
 
-      {/* ✅ Modais */}
       <Modal
         isOpen={showTerms}
         onClose={() => setShowTerms(false)}
@@ -271,7 +275,7 @@ export default function Register() {
           canais oficiais.
         </p>
 
-        <p>Última atualização: [Data Atual].</p>
+        <p>Última atualização: 23/06/2025.</p>
       </Modal>
 
       <Modal
@@ -322,7 +326,7 @@ export default function Register() {
           de eventuais modificações.
         </p>
 
-        <p>Última atualização: [Data Atual].</p>
+        <p>Última atualização: 23/06/2025.</p>
       </Modal>
     </>
   );
