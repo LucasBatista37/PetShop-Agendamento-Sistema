@@ -1,39 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import EditServiceModal from "./EditServiceModal";
+import AddServiceModal from "./AddServiceModal";
+import { fetchServices, deleteService, updateService } from "@/api/api";
 
 export default function ServicesConfig() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editData, setEditData] = useState(null);
-
-  const token = localStorage.getItem("token");
-  const api = axios.create({
-    baseURL: "http://localhost:5000/api/services",
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const [editError, setEditError] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false); 
 
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const res = await api.get("/");
-        setServices(res.data);
-      } catch (err) {
-        setError("Erro ao carregar serviços");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchServices();
+    fetchServices()
+      .then((res) => setServices(res.data))
+      .catch(() => setError("Erro ao carregar serviços"))
+      .finally(() => setLoading(false));
   }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Excluir este serviço?")) return;
     try {
-      await api.delete(`/${id}`);
+      await deleteService(id);
       setServices((prev) => prev.filter((s) => s._id !== id));
     } catch (err) {
       alert("Erro ao excluir serviço");
@@ -41,15 +30,25 @@ export default function ServicesConfig() {
   };
 
   const handleSaveEdit = async (updated) => {
+    setEditError("");
     try {
-      const res = await api.put(`/${updated._id}`, updated);
+      const res = await updateService(updated._id, updated);
       setServices((prev) =>
         prev.map((s) => (s._id === updated._id ? res.data : s))
       );
       setEditData(null);
     } catch (err) {
-      alert("Erro ao atualizar serviço");
+      console.error(err);
+      const errorMsg =
+        err.response?.data?.errors?.[0]?.msg ||
+        err.response?.data?.message ||
+        "Erro ao atualizar serviço";
+      setEditError(errorMsg);
     }
+  };
+
+  const handleAddService = (newService) => {
+    setServices((prev) => [newService, ...prev]);
   };
 
   if (loading) return <p className="p-6">Carregando...</p>;
@@ -59,12 +58,12 @@ export default function ServicesConfig() {
     <div className="p-6 bg-gray-50 min-h-screen">
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-semibold text-gray-800">Serviços</h1>
-        <Link
-          to="/services/new"
+        <button
+          onClick={() => setShowAddModal(true)}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
         >
           <FaPlus /> Novo Serviço
-        </Link>
+        </button>
       </header>
 
       {services.length === 0 ? (
@@ -76,7 +75,10 @@ export default function ServicesConfig() {
               key={s._id}
               service={s}
               onDelete={() => handleDelete(s._id)}
-              onEdit={() => setEditData(s)}
+              onEdit={() => {
+                setEditData(s);
+                setEditError("");
+              }}
             />
           ))}
         </div>
@@ -87,19 +89,39 @@ export default function ServicesConfig() {
           service={editData}
           onClose={() => setEditData(null)}
           onSave={handleSaveEdit}
+          error={editError}
         />
       )}
+
+      <AddServiceModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSave={handleAddService}
+      />
     </div>
   );
 }
 
 function ServiceCard({ service, onDelete, onEdit }) {
+  const truncate = (text, maxLength) => {
+    if (!text) return "";
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  };
+
   return (
     <div className="bg-white border rounded-lg shadow-sm p-4 flex flex-col justify-between">
       <div>
-        <h3 className="text-lg font-semibold text-gray-800">{service.name}</h3>
-        <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">
-          {service.description}
+        <h3
+          className="text-lg font-semibold text-gray-800"
+          title={service.name}
+        >
+          {service.name}
+        </h3>
+        <p
+          className="mt-1 text-sm text-gray-600 overflow-hidden break-words"
+          title={service.description}
+        >
+          {truncate(service.description, 150)}
         </p>
       </div>
       <div className="mt-4 flex items-center justify-between">

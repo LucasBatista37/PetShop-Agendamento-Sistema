@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api, { setAuthToken } from "../Api/api";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 
 export default function Login() {
@@ -24,16 +24,24 @@ export default function Login() {
     }
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password,
-      });
-      localStorage.setItem("token", res.data.token);
+      const res = await api.post("/auth/login", { email, password });
+      setAuthToken(res.data.token);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Credenciais inválidas");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      await api.post("/auth/resend-verification", {
+        email: form.email,
+      });
+      alert("E-mail de verificação reenviado. Verifique sua caixa de entrada.");
+    } catch {
+      alert("Erro ao reenviar e-mail.");
     }
   };
 
@@ -100,7 +108,16 @@ export default function Login() {
         </button>
       </form>
 
-      <div className="flex items-center my-8 gap-4">
+      {error.includes("não verificado") && (
+        <button
+          onClick={handleResend}
+          className="mt-4 w-full text-center text-indigo-600 hover:underline"
+        >
+          Reenviar e-mail de verificação
+        </button>
+      )}
+
+      {/* <div className="flex items-center my-8 gap-4">
         <hr className="flex-1 border-gray-300" />
         <span className="text-sm text-gray-500 whitespace-nowrap">
           ou entre com
@@ -111,7 +128,6 @@ export default function Login() {
       <div className="flex justify-center gap-5">
         {[
           { src: "/google-icon.svg", alt: "Google" },
-          { src: "/apple-icon.svg", alt: "Apple" },
         ].map(({ src, alt }) => (
           <button
             key={alt}
@@ -120,7 +136,15 @@ export default function Login() {
             <img src={src} alt={alt} className="w-5 h-5" />
           </button>
         ))}
-      </div>
+      </div> */}
+
+      <button
+        type="button"
+        onClick={() => navigate("/forgot-password")}
+        className="mt-4 w-full text-center text-indigo-600 hover:underline"
+      >
+        Esqueci minha senha
+      </button>
 
       <p className="mt-10 text-sm text-center text-gray-500">
         Não possui conta?{" "}

@@ -1,11 +1,12 @@
 import React from "react";
 import { format } from "date-fns";
 
-export default function StepSchedule({ data, onChange, freeTimes }) {
+export default function StepSchedule({ data, onChange, freeTimes, errors = {} }) {
   const today = format(new Date(), "yyyy-MM-dd");
 
   return (
     <div className="space-y-4">
+      {errors.date && <p className="text-red-600 text-sm">{errors.date}</p>}
       <input
         type="date"
         value={data.date}
@@ -17,6 +18,7 @@ export default function StepSchedule({ data, onChange, freeTimes }) {
       {data.date && (
         <>
           <h3 className="font-medium">Horário</h3>
+          {errors.time && <p className="text-red-600 text-sm">{errors.time}</p>}
           <select
             value={data.time}
             onChange={(e) => onChange({ ...data, time: e.target.value })}

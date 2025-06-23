@@ -6,7 +6,7 @@
   border-radius: 9999px;
 }
 .custom-scroll::-webkit-scrollbar-thumb {
-  background-color: #a78bfa; /* roxo semelhante ao botão */
+  background-color: #a78bfa;
   border-radius: 9999px;
   border: 1px solid #f3f4f6;
 }
