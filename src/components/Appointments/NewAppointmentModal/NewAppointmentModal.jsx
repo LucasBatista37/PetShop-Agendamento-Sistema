@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import { FaCheck, FaChevronRight, FaChevronLeft } from "react-icons/fa";
-import StepPet from "./steps/StepPet";
-import StepService from "./steps/StepService";
-import StepSchedule from "./steps/StepSchedule";
-import StepReview from "./steps/StepReview";
+import StepPet from "./Setps/StepPet";
+import StepService from "./Setps/StepService";
+import StepSchedule from "./Setps/StepSchedule";
+import StepReview from "./Steps/StepReview";
 import Joi from "joi";
 
 const STEPS = ["Pet", "Serviço", "Data", "Revisão"];
