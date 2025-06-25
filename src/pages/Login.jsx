@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api, { setAuthToken } from "../Api/api";
+import api, { setAuthToken } from "@/api/api";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 
 export default function Login() {

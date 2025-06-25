@@ -94,7 +94,6 @@ export default function AppointmentDetails({
           </button>
         </header>
 
-        {/* Conteúdo com scroll */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-6 text-sm">
           <Section title="Informações do Pet">
             <Item
