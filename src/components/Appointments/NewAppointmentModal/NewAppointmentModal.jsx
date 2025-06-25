@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import { FaCheck, FaChevronRight, FaChevronLeft } from "react-icons/fa";
-import StepPet from "./Setps/StepPet";
-import StepService from "./Setps/StepService";
-import StepSchedule from "./Setps/StepSchedule";
+import StepPet from "./Steps/StepPet";
+import StepService from "./Steps/StepService";
+import StepSchedule from "./Steps/StepSchedule";
 import StepReview from "./Steps/StepReview";
 import Joi from "joi";
 
