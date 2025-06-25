@@ -10,7 +10,7 @@ import {
   createAppointment,
   deleteAppointment,
   updateAppointment,
-} from "../../Api/api";
+} from "@/api/api";
 import { Dialog } from "@headlessui/react";
 import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "../../utils/Toast";

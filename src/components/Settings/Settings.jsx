@@ -19,7 +19,6 @@ export default function AccountSettings() {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  // Inicializa token e redireciona se não autenticado
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {

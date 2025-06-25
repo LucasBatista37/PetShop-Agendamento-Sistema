@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { FiX, FiSend } from "react-icons/fi";
 import { notifySuccess, notifyError } from "../../utils/Toast";
-import { sendSupportMessage } from "../../Api/api";
+import { sendSupportMessage } from "@/api/api";
 
 export default function SupportMessageModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import api from "@/api/api";
 
 export default function StepService({ data, onChange, errors = {} }) {
   const [services, setServices] = useState([]);
@@ -11,7 +12,7 @@ export default function StepService({ data, onChange, errors = {} }) {
   useEffect(() => {
     const fetch = async () => {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/services", {
+      const res = await api.get("/services", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setServices(res.data);
@@ -38,7 +39,9 @@ export default function StepService({ data, onChange, errors = {} }) {
     <div className="space-y-6">
       <div>
         <h3 className="text-gray-700 font-semibold mb-2">Serviço Base</h3>
-        {errors.base && <p className="text-red-600 text-sm mb-1">{errors.base}</p>}
+        {errors.base && (
+          <p className="text-red-600 text-sm mb-1">{errors.base}</p>
+        )}
         <div
           className={`overflow-y-auto pr-1 rounded-md custom-scroll`}
           style={{ maxHeight: bases.length > BASE_LIMIT ? "13rem" : "none" }}

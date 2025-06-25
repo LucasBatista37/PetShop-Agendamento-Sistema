@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
+import api from "@/api/api";
 
 export default function Sidebar({ isOpen, onClose }) {
   const [user, setUser] = useState({ name: "", email: "" });
@@ -18,13 +19,12 @@ export default function Sidebar({ isOpen, onClose }) {
       const token = localStorage.getItem("token");
       if (!token) return;
       try {
-        const res = await fetch("http://localhost:5000/api/auth/me", {
+        const res = await api.get("/auth/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        const data = await res.json();
-        setUser(data.user);
+        setUser(res.data.user);
       } catch (error) {
         console.error("Erro ao buscar usuário", error);
       }
