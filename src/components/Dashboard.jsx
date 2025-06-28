@@ -72,10 +72,7 @@ export default function DashboardAgendamentos() {
         </div>
 
         <div className="flex flex-col gap-6 order-1 lg:order-none">
-          <PetImageCard
-            date="2025-06-23T09:00:00"
-            imageSrc="https://images.unsplash.com/photo-1561037404-61cd46aa615b?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0"
-          />
+          <PetImageCard imageSrc="https://images.unsplash.com/photo-1561037404-61cd46aa615b?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0" />
           <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col flex-1">
             <WeeklyCalendar date={date} setDate={setDate} />
             <hr className="my-4" />
