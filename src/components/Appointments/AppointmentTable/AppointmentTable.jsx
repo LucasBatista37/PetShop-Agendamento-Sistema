@@ -106,8 +106,6 @@ export default function AppointmentTable({
           </tbody>
         </table>
 
-        {/* Mobile cards */}
-        {/* Mobile cards */}
         <div className="md:hidden space-y-4 px-4 py-2">
           {paginatedData.map((appointment, idx) => {
             const statusClass =

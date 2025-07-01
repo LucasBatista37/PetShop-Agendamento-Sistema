@@ -10,6 +10,7 @@ import {
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "@/api/api";
+import { FaUsers } from "react-icons/fa";
 
 export default function Sidebar({ isOpen, onClose }) {
   const [user, setUser] = useState({ name: "", email: "" });
@@ -77,6 +78,12 @@ export default function Sidebar({ isOpen, onClose }) {
               <NavLink to="/services" className={navLinkClass}>
                 <FaBriefcase className="w-5 h-5" />
                 Serviços
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/collaborators" className={navLinkClass}>
+                <FaUsers className="w-5 h-5" />
+                Colaboradores
               </NavLink>
             </li>
           </ul>

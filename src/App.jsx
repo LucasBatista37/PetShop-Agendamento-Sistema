@@ -19,6 +19,7 @@ import AccountSettings from "./components/Settings/Settings";
 import ForgotPassword from "./components/Settings/ForgotPassword";
 import ResetPassword from "./components/Settings/ResetPassword";
 import HelpDetail from "./components/Help/HelpDetails";
+import Collaborators from "./components/Collaborators";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
           <Route path="/settings" element={<AccountSettings />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/collaborators" element={<Collaborators />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />
