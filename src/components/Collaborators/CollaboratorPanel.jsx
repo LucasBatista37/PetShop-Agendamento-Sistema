@@ -9,6 +9,7 @@ export default function CollaboratorPanel({
   view,
   setView,
   data,
+  onDelete,
 }) {
   return (
     <div className="bg-white rounded-xl shadow">
@@ -23,11 +24,12 @@ export default function CollaboratorPanel({
 
       <div className={view === "card" ? "p-4" : "pt-2"}>
         {view === "list" ? (
-          <ListView data={data} />
+          <ListView data={data} onDelete={onDelete} />
         ) : (
-          <CardView data={data} />
+          <CardView data={data} onDelete={onDelete} />
         )}
       </div>
     </div>
   );
 }
+

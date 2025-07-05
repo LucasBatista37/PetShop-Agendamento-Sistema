@@ -20,6 +20,7 @@ import ForgotPassword from "./components/Settings/ForgotPassword";
 import ResetPassword from "./components/Settings/ResetPassword";
 import HelpDetail from "./components/Help/HelpDetails";
 import Collaborators from "./components/Collaborators";
+import AcceptInvite from "./components/Collaborators/AcceptInvite";
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/collaborators" element={<Collaborators />} />
+          <Route path="/aceitar-convite" element={<AcceptInvite />} />{" "}
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

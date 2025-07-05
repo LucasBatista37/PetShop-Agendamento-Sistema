@@ -86,4 +86,14 @@ export const sendForgotPasswordLink = (email) =>
 export const resetPassword = ({ email, token, newPassword }) =>
   api.post("/auth/reset-password", { email, token, newPassword });
 
+  export const inviteCollaborator = ({ email, department }) =>
+    api.post("/collaborators/invite", { email, department });
+
+  export const acceptInvite = (data) =>
+    api.post("/collaborators/accept-invite", data);
+
+  export const fetchCollaborators = () => api.get("/collaborators");
+
+  export const deleteCollaborator = (id) => api.delete(`/collaborators/${id}`);
+
 export default api;
