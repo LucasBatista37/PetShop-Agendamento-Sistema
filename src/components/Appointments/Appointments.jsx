@@ -15,7 +15,8 @@ import { Dialog } from "@headlessui/react";
 import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "../../utils/Toast";
 import * as XLSX from "xlsx";
-import { FaFileExport } from "react-icons/fa";
+import { FaFileExport, FaPlus } from "react-icons/fa";
+import PrimaryButton from "@/components/ui/PrimaryButton";
 
 const locales = { pt: ptLocale };
 const localizer = dateFnsLocalizer({
@@ -224,18 +225,22 @@ export default function Appointments() {
               Gerenciamento de Agendamentos
             </h1>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <button
+              <PrimaryButton
                 onClick={() => setExportModalOpen(true)}
-                className="w-full sm:w-auto bg-green-600 px-4 sm:px-6 py-2 text-base sm:text-lg text-white rounded-md hover:bg-green-700 transition flex items-center justify-center"
+                icon={FaFileExport}
+                color="green"
+                fullWidth
               >
-                <FaFileExport className="mr-2" /> Exportar
-              </button>
-              <button
+                Exportar
+              </PrimaryButton>
+
+              <PrimaryButton
                 onClick={() => setModalData({})}
-                className="w-full sm:w-auto bg-indigo-600 px-4 sm:px-6 py-2 text-base sm:text-lg text-white rounded-md hover:bg-indigo-700 transition"
+                icon={FaPlus}
+                color="indigo"
               >
-                + Novo
-              </button>
+                Novo
+              </PrimaryButton>
             </div>
           </div>
         </header>

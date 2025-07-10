@@ -6,11 +6,12 @@ export default function CollaboratorFilters({
   setSearch,
   view,
   setView,
+  total, 
 }) {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
       <div className="text-gray-700 font-medium">
-        Total de colaboradores: <span className="font-bold">1285</span>
+        Total de colaboradores: <span className="font-bold">{total}</span>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">

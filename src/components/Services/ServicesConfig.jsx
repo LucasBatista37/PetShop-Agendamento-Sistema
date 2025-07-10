@@ -3,6 +3,7 @@ import { FaPlus, FaTrash } from "react-icons/fa";
 import EditServiceModal from "./EditServiceModal";
 import AddServiceModal from "./AddServiceModal";
 import { fetchServices, deleteService, updateService } from "@/api/api";
+import PrimaryButton from "@/components/ui/PrimaryButton";
 
 export default function ServicesConfig() {
   const [services, setServices] = useState([]);
@@ -10,7 +11,7 @@ export default function ServicesConfig() {
   const [error, setError] = useState("");
   const [editData, setEditData] = useState(null);
   const [editError, setEditError] = useState("");
-  const [showAddModal, setShowAddModal] = useState(false); 
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     fetchServices()
@@ -58,12 +59,13 @@ export default function ServicesConfig() {
     <div className="p-6 bg-gray-50 min-h-screen">
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-semibold text-gray-800">Serviços</h1>
-        <button
+        <PrimaryButton
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+          icon={FaPlus}
+          color="indigo"
         >
-          <FaPlus /> Novo Serviço
-        </button>
+          Novo Serviço
+        </PrimaryButton>
       </header>
 
       {services.length === 0 ? (

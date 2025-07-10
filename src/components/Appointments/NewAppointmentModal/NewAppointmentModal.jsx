@@ -86,10 +86,9 @@ export default function NewAppointmentModal({
         "string.empty": "O nome do tutor é obrigatório.",
       }),
       ownerPhone: Joi.string()
+        .allow("") 
         .pattern(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/)
-        .required()
         .messages({
-          "string.empty": "O telefone é obrigatório.",
           "string.pattern.base": "Formato de telefone inválido.",
         }),
       species: Joi.string().valid("Cachorro", "Gato").required(),

@@ -19,10 +19,11 @@ export default function CollaboratorPanel({
           setSearch={setSearch}
           view={view}
           setView={setView}
+          total={data.length} 
         />
       </div>
 
-      <div className={view === "card" ? "p-4" : "pt-2"}>
+      <div className={view === "card" ? "p-4" : "pt-0"}>
         {view === "list" ? (
           <ListView data={data} onDelete={onDelete} />
         ) : (
@@ -32,4 +33,3 @@ export default function CollaboratorPanel({
     </div>
   );
 }
-

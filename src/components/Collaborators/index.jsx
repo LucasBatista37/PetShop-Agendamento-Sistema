@@ -5,6 +5,8 @@ import { toast } from "react-toastify";
 import AddCollaboratorModal from "./AddCollaboratorModal";
 import CollaboratorPanel from "./CollaboratorPanel";
 
+import PrimaryButton from "@/components/ui/PrimaryButton";
+
 import {
   fetchCollaborators,
   inviteCollaborator,
@@ -70,12 +72,14 @@ export default function Collaborators() {
           <h1 className="text-2xl sm:text-3xl font-semibold text-gray-800">
             Colaboradores
           </h1>
-          <button
+          <PrimaryButton
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            icon={FaUserPlus}
+            color="indigo"
+            fullWidth
           >
-            <FaUserPlus /> Adicionar
-          </button>
+            Adicionar
+          </PrimaryButton>
         </div>
       </header>
 

@@ -6,11 +6,11 @@ import {
   FaQuestionCircle,
   FaSignOutAlt,
   FaTimes,
+  FaUsers,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "@/api/api";
-import { FaUsers } from "react-icons/fa";
 
 export default function Sidebar({ isOpen, onClose }) {
   const [user, setUser] = useState({ name: "", email: "" });
@@ -45,6 +45,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <aside
+      onClick={(e) => e.stopPropagation()} // impede o clique de fechar a sidebar
       className={`fixed z-40 md:static top-0 left-0 h-full w-64 bg-white border-r flex flex-col justify-between transform transition-transform duration-300 ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       } md:translate-x-0`}
@@ -95,19 +96,13 @@ export default function Sidebar({ isOpen, onClose }) {
           </p>
           <ul className="space-y-1">
             <li>
-              <NavLink
-                to="/settings"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100"
-              >
+              <NavLink to="/settings" className={navLinkClass}>
                 <FaCog className="w-5 h-5" />
                 Configurações
               </NavLink>
             </li>
             <li>
-              <NavLink
-                to="/help"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100"
-              >
+              <NavLink to="/help" className={navLinkClass}>
                 <FaQuestionCircle className="w-5 h-5" />
                 Ajuda
               </NavLink>
