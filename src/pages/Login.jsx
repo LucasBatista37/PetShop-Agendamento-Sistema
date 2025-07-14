@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api, { setAuthToken } from "@/api/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { setUser } = useAuth(); 
+
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,7 +28,9 @@ export default function Login() {
     try {
       setLoading(true);
       const res = await api.post("/auth/login", { email, password });
-      setAuthToken(res.data.token);
+
+      setAuthToken(res.data.accessToken);
+      setUser(res.data.user);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Credenciais inválidas");

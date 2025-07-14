@@ -2,6 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true,
 });
 
 export const setAuthToken = (token) => {
@@ -16,14 +17,43 @@ export const setAuthToken = (token) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      setAuthToken(null);
-      window.location.href = "/login";
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes("/auth/login") &&
+      !originalRequest.url.includes("/auth/refresh")
+    ) {
+      originalRequest._retry = true;
+      try {
+        const res = await api.post("/auth/refresh");
+        const newToken = res.data.accessToken;
+        setAuthToken(newToken);
+        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+        return api(originalRequest);
+      } catch (err) {
+        setAuthToken(null);
+        window.location.href = "/login";
+        return Promise.reject(err);
+      }
     }
+
     return Promise.reject(error);
   }
 );
+
+export const logoutUser = async () => {
+  try {
+    await api.post("/auth/logout");
+  } catch (error) {
+    console.error("Erro ao realizar logout:", error);
+  } finally {
+    setAuthToken(null);
+    window.location.href = "/login"; 
+  }
+};
 
 export const fetchDashboardStats = () => api.get("/dashboard/stats");
 export const fetchAppointments = () => api.get("/appointments");
@@ -86,14 +116,14 @@ export const sendForgotPasswordLink = (email) =>
 export const resetPassword = ({ email, token, newPassword }) =>
   api.post("/auth/reset-password", { email, token, newPassword });
 
-  export const inviteCollaborator = ({ email, department }) =>
-    api.post("/collaborators/invite", { email, department });
+export const inviteCollaborator = ({ email, department }) =>
+  api.post("/collaborators/invite", { email, department });
 
-  export const acceptInvite = (data) =>
-    api.post("/collaborators/accept-invite", data);
+export const acceptInvite = (data) =>
+  api.post("/collaborators/accept-invite", data);
 
-  export const fetchCollaborators = () => api.get("/collaborators");
+export const fetchCollaborators = () => api.get("/collaborators");
 
-  export const deleteCollaborator = (id) => api.delete(`/collaborators/${id}`);
+export const deleteCollaborator = (id) => api.delete(`/collaborators/${id}`);
 
 export default api;
