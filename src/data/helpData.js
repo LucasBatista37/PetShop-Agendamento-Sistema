@@ -1,10 +1,12 @@
 import {
-  FiPlus,
+  FiPlay,
+  FiCalendar,
+  FiSettings,
   FiUsers,
-  FiClipboard,
-  FiTool,
+  FiFileText,
+  FiShield,
+  FiHelpCircle,
   FiBarChart2,
-  FiCpu,
 } from "react-icons/fi";
 
 export const helpTopics = [
@@ -13,7 +15,7 @@ export const helpTopics = [
     title: "Primeiros Passos",
     desc: "Saiba como fazer login, configurar sua conta e navegar pelo sistema.",
     to: "/help/primeiros-passos",
-    icon: FiPlus,
+    icon: FiPlay,
     details: [
       {
         id: "login",
@@ -38,105 +40,213 @@ export const helpTopics = [
   {
     id: 2,
     title: "Dashboard",
-    desc: "Visualize indicadores, métricas e resumos de atividade em tempo real.",
+    desc: "Acompanhe seus agendamentos e veja um resumo das atividades do dia a dia.",
     to: "/help/dashboard",
-    icon: FiUsers,
+    icon: FiBarChart2,
     details: [
       {
         id: "visao-geral",
-        heading: "Visão Geral",
+        heading: "O que é o Dashboard?",
         content:
-          "No Dashboard, você encontra um resumo rápido dos principais indicadores de desempenho do seu negócio.",
+          "É a tela principal onde você encontra um resumo rápido dos agendamentos, serviços mais solicitados e o andamento geral do seu negócio.",
       },
       {
-        id: "metricas",
-        heading: "Métricas Detalhadas",
+        id: "graficos",
+        heading: "Gráficos e Indicadores",
         content:
-          "Analise métricas como número de agendamentos, receita e engajamento ao longo do tempo.",
+          "Visualize gráficos simples e intuitivos que mostram os serviços realizados, status dos agendamentos e tendências dos últimos dias.",
+      },
+      {
+        id: "agenda-diaria",
+        heading: "Agenda Diária",
+        content:
+          "Use o calendário semanal para escolher o dia e veja automaticamente os agendamentos daquele dia. Tudo em um só lugar, de forma rápida e prática.",
       },
     ],
   },
   {
     id: 3,
     title: "Agendamentos",
-    desc: "Crie, edite e gerencie agendamentos de forma prática e rápida.",
-    to: "/help/agendamentos",
-    icon: FiClipboard,
+    desc: "Crie, visualize e gerencie todos os agendamentos de forma fácil.",
+    to: "/help/appointments",
+    icon: FiCalendar,
     details: [
       {
-        id: "criar-agendamento",
-        heading: "Criando Agendamentos",
+        id: "visao-geral",
+        heading: "Como funciona?",
         content:
-          "Clique em 'Novo Agendamento', selecione cliente, serviço, data e hora e confirme.",
+          "Aqui você gerencia todos os agendamentos de pets. Você pode criar novos, editar, cancelar ou marcar como finalizados.",
       },
       {
-        id: "gerenciar-agendamento",
-        heading: "Gerenciando Agendamentos",
+        id: "lista-calendario",
+        heading: "Visualização flexível",
         content:
-          "Visualize, edite ou cancele agendamentos existentes através do calendário ou lista de agendamentos.",
+          "Alterne entre uma lista com filtros detalhados ou um calendário interativo para acompanhar todos os compromissos.",
+      },
+      {
+        id: "exportacao",
+        heading: "Exportar agendamentos",
+        content:
+          "Com apenas alguns cliques, você pode exportar seus agendamentos em formato CSV ou Excel.",
       },
     ],
   },
   {
     id: 4,
-    title: "Termos de Uso",
-    desc: "Entenda as regras e responsabilidades ao utilizar o nosso sistema.",
-    to: "/help/termos-de-uso",
-    icon: FiTool,
+    title: "Serviços",
+    desc: "Adicione, edite ou exclua os serviços oferecidos no seu pet shop.",
+    to: "/help/services",
+    icon: FiSettings,
     details: [
       {
-        id: "politica-geral",
-        heading: "Política Geral",
+        id: "gerenciamento",
+        heading: "O que posso fazer aqui?",
         content:
-          "Ao usar nosso sistema, você concorda em seguir todas as regras descritas nos Termos de Uso.",
+          "Você pode cadastrar novos serviços, editar os existentes ou excluir aqueles que não são mais utilizados. Tudo de forma simples e rápida.",
       },
       {
-        id: "direitos-responsabilidades",
-        heading: "Direitos e Responsabilidades",
+        id: "diferenca",
+        heading: "Serviços normais e extras",
         content:
-          "Leia atentamente para entender seus direitos e obrigações ao utilizar a plataforma.",
+          "Na hora de cadastrar, marque se o serviço é extra. Serviços extras são adicionados ao serviço principal de um agendamento.",
+      },
+      {
+        id: "como-usar",
+        heading: "Como usar?",
+        content:
+          "Clique em 'Novo Serviço' para adicionar um. Use os ícones de lápis e lixeira nos cartões para editar ou excluir os serviços já existentes.",
       },
     ],
   },
   {
     id: 5,
-    title: "Política de Privacidade",
-    desc: "Saiba como coletamos, usamos e protegemos seus dados.",
-    to: "/help/politica-de-privacidade",
-    icon: FiBarChart2,
+    title: "Colaboradores",
+    desc: "Convide e gerencie colaboradores que têm acesso ao sistema.",
+    to: "/help/collaborators",
+    icon: FiUsers,
     details: [
       {
-        id: "coleta-dados",
-        heading: "Coleta de Dados",
+        id: "convite",
+        heading: "Convite de colaboradores",
         content:
-          "Coletamos apenas informações necessárias para oferecer uma experiência personalizada e segura.",
+          "Você pode adicionar novos colaboradores informando o e-mail e o departamento. Eles receberão um convite por e-mail para criar uma conta e acessar o sistema.",
       },
       {
-        id: "uso-dados",
-        heading: "Uso e Proteção de Dados",
+        id: "gestao",
+        heading: "Gerenciamento",
         content:
-          "Seus dados são usados apenas para fins internos e protegidos por tecnologias de segurança modernas.",
+          "Acompanhe todos os colaboradores cadastrados e exclua quem não faz mais parte da equipe. Use o filtro de busca para encontrar facilmente um nome ou e-mail.",
+      },
+      {
+        id: "visualizacao",
+        heading: "Visualização personalizável",
+        content:
+          "Escolha entre visualização em lista ou em cards, facilitando a leitura conforme sua preferência.",
       },
     ],
   },
   {
     id: 6,
+    title: "Termos de Uso",
+    desc: "Entenda as regras e responsabilidades ao utilizar o nosso sistema.",
+    to: "/help/termos-de-uso",
+    icon: FiFileText,
+    details: [
+      {
+        id: "politica-geral",
+        heading: "Política Geral",
+        content:
+          "Ao utilizar nosso sistema, você concorda com os termos estabelecidos neste documento. É importante ler atentamente para garantir o uso correto e consciente da plataforma.",
+      },
+      {
+        id: "direitos-responsabilidades",
+        heading: "Direitos e Responsabilidades",
+        content:
+          "Você tem o direito de acessar os recursos oferecidos pelo sistema, desde que os utilize de maneira ética e segura. É responsabilidade do usuário manter seus dados atualizados e não compartilhar acessos indevidamente.",
+      },
+      {
+        id: "restricoes",
+        heading: "Restrições de Uso",
+        content:
+          "Não é permitido utilizar o sistema para fins ilegais, ofensivos ou que violem os direitos de terceiros. Qualquer tentativa de manipular o funcionamento do sistema resultará em sanções ou exclusão da conta.",
+      },
+      {
+        id: "modificacoes",
+        heading: "Alterações nos Termos",
+        content:
+          "Nos reservamos o direito de atualizar estes termos periodicamente. Sempre que isso acontecer, os usuários serão notificados, e o uso contínuo do sistema implica concordância com as novas condições.",
+      },
+    ],
+  },
+  {
+    id: 7,
+    title: "Política de Privacidade",
+    desc: "Saiba como coletamos, usamos e protegemos seus dados.",
+    to: "/help/politica-de-privacidade",
+    icon: FiShield,
+    details: [
+      {
+        id: "coleta-dados",
+        heading: "Coleta de Dados",
+        content:
+          "Coletamos apenas as informações essenciais para funcionamento do sistema, como nome, e-mail e dados relacionados a agendamentos. Não solicitamos informações sensíveis sem necessidade.",
+      },
+      {
+        id: "uso-dados",
+        heading: "Uso e Finalidade",
+        content:
+          "Os dados são utilizados para personalizar a experiência do usuário, melhorar nossos serviços e garantir segurança no acesso à plataforma. Nunca comercializamos suas informações.",
+      },
+      {
+        id: "seguranca",
+        heading: "Segurança e Proteção",
+        content:
+          "Utilizamos práticas e tecnologias modernas de segurança para proteger seus dados contra acessos não autorizados, perda ou vazamento.",
+      },
+      {
+        id: "compartilhamento",
+        heading: "Compartilhamento com Terceiros",
+        content:
+          "Suas informações não são compartilhadas com terceiros, exceto quando exigido por lei ou necessário para o funcionamento do sistema com prestadores confiáveis.",
+      },
+      {
+        id: "direitos-usuario",
+        heading: "Seus Direitos",
+        content:
+          "Você pode solicitar acesso, correção ou exclusão dos seus dados pessoais a qualquer momento. Para isso, basta entrar em contato com nossa equipe de suporte.",
+      },
+    ],
+  },
+  {
+    id: 8,
     title: "Suporte Técnico",
-    desc: "Encontre soluções para problemas ou fale com o suporte.",
+    desc: "Tire dúvidas, encontre soluções ou fale diretamente com nossa equipe.",
     to: "/help/suporte",
-    icon: FiCpu,
+    icon: FiHelpCircle,
     details: [
       {
         id: "faq",
         heading: "Perguntas Frequentes",
         content:
-          "Antes de abrir um chamado, consulte a lista de dúvidas frequentes.",
+          "Antes de entrar em contato, recomendamos consultar os tópicos disponíveis na Central de Ajuda. Muitos problemas comuns já estão respondidos de forma rápida e prática.",
       },
       {
-        id: "contato",
-        heading: "Contato com Suporte",
+        id: "pesquisa",
+        heading: "Busque por palavras-chave",
         content:
-          "Clique em 'Enviar Mensagem' na Central de Ajuda para falar com nossa equipe.",
+          "Use o campo de busca para encontrar conteúdos relacionados à sua dúvida, como 'agendamento', 'serviços', 'cadastro' ou 'senha'.",
+      },
+      {
+        id: "contato-direto",
+        heading: "Falar com o Suporte",
+        content:
+          "Se não encontrar a resposta, clique no botão 'Enviar mensagem' e preencha o formulário com seu nome, e-mail, assunto e descrição do problema. Nossa equipe responderá o mais breve possível.",
+      },
+      {
+        id: "tempo-resposta",
+        heading: "Tempo de Resposta",
+        content:
+          "A maioria das mensagens é respondida em até 1 dia útil. Durante fins de semana ou feriados, o retorno pode levar um pouco mais de tempo.",
       },
     ],
   },

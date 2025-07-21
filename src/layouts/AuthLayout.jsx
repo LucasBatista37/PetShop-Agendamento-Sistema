@@ -24,7 +24,7 @@ export default function AuthLayout() {
 
         <div className="relative z-10 text-center px-8 max-w-sm">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white mb-4">
-            Gerencie sua clínica e agendamentos.
+            Gerencie seus Agendamentos com Excelência.
           </h2>
           <p className="text-lg text-indigo-200 mb-8">
             Faça login para acessar seu painel PetCare e acompanhar clientes, pets e serviços.
