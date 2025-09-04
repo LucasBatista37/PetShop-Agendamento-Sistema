@@ -1,10 +1,9 @@
-import React, { useState, useMemo } from "react";
-import IconButton from "../IconButton";
-import AppointmentDetails from "../AppointmentDetails";
+import React, { useState } from "react";
 import TableFilters from "./TableFilters";
-import TableRow from "./TableRow";
 import Pagination from "./Pagination";
-import { format, parseISO } from "date-fns";
+import TableRow from "./TableRow";
+import { parseISO, format } from "date-fns";
+import AppointmentDetails from "../AppointmentDetails";
 
 export default function AppointmentTable({
   data = [],
@@ -21,20 +20,15 @@ export default function AppointmentTable({
   setFilterStatus,
   view,
   setView,
+  currentPage,
+  setCurrentPage,
+  rowsPerPage,
+  setRowsPerPage,
+  totalPages,
+  onReload,
 }) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selected, setSelected] = useState(null);
   const [statusMenuOpen, setStatusMenuOpen] = useState(null);
-
-  const totalPages = Math.ceil(data.length / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-
-  const paginatedData = useMemo(
-    () => data.slice(startIndex, endIndex),
-    [data, startIndex, endIndex]
-  );
 
   const goToPage = (page) => {
     if (page < 1) page = 1;
@@ -82,18 +76,18 @@ export default function AppointmentTable({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedData.length === 0 ? (
+            {data.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-2 text-center text-gray-400">
                   Nenhum agendamento encontrado.
                 </td>
               </tr>
             ) : (
-              paginatedData.map((appointment, idx) => (
+              data.map((appointment, idx) => (
                 <TableRow
                   key={appointment._id}
                   appointment={appointment}
-                  index={startIndex + idx}
+                  index={(currentPage - 1) * rowsPerPage + idx}
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onStatusChange={onStatusChange}
@@ -107,7 +101,7 @@ export default function AppointmentTable({
         </table>
 
         <div className="md:hidden space-y-4 px-4 py-2">
-          {paginatedData.map((appointment, idx) => {
+          {data.map((appointment) => {
             const statusClass =
               {
                 Confirmado: "bg-blue-100 text-blue-700",
@@ -119,8 +113,8 @@ export default function AppointmentTable({
             return (
               <div
                 key={appointment._id}
-                onClick={() => setSelected(appointment)} 
-                className="bg-white rounded-lg shadow p-4 cursor-pointer" 
+                onClick={() => setSelected(appointment)}
+                className="bg-white rounded-lg shadow p-4 cursor-pointer"
               >
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-gray-800">
@@ -141,7 +135,7 @@ export default function AppointmentTable({
                 </div>
                 <div
                   className="flex gap-2"
-                  onClick={(e) => e.stopPropagation()} 
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => onEdit(appointment)}

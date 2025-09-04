@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaSearch, FaList, FaTh } from "react-icons/fa";
 
 export default function CollaboratorFilters({
@@ -6,8 +6,21 @@ export default function CollaboratorFilters({
   setSearch,
   view,
   setView,
-  total, 
+  total,
 }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640); 
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) setView("card");
+  }, [isMobile, setView]);
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
       <div className="text-gray-700 font-medium">
@@ -25,28 +38,32 @@ export default function CollaboratorFilters({
           <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         </div>
 
-        <button
-          onClick={() => setView("list")}
-          title="Exibir como lista"
-          className={`p-2 rounded-md border ${
-            view === "list"
-              ? "bg-indigo-600 text-white border-indigo-600"
-              : "text-gray-600 hover:bg-gray-100 border-gray-300"
-          }`}
-        >
-          <FaList />
-        </button>
-        <button
-          onClick={() => setView("card")}
-          title="Exibir como cards"
-          className={`p-2 rounded-md border ${
-            view === "card"
-              ? "bg-indigo-600 text-white border-indigo-600"
-              : "text-gray-600 hover:bg-gray-100 border-gray-300"
-          }`}
-        >
-          <FaTh />
-        </button>
+        {!isMobile && (
+          <>
+            <button
+              onClick={() => setView("list")}
+              title="Exibir como lista"
+              className={`p-2 rounded-md border ${
+                view === "list"
+                  ? "bg-indigo-600 text-white border-indigo-600"
+                  : "text-gray-600 hover:bg-gray-100 border-gray-300"
+              }`}
+            >
+              <FaList />
+            </button>
+            <button
+              onClick={() => setView("card")}
+              title="Exibir como cards"
+              className={`p-2 rounded-md border ${
+                view === "card"
+                  ? "bg-indigo-600 text-white border-indigo-600"
+                  : "text-gray-600 hover:bg-gray-100 border-gray-300"
+              }`}
+            >
+              <FaTh />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

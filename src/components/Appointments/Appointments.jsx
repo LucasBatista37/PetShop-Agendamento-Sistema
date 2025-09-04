@@ -31,6 +31,10 @@ export default function Appointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalDocs, setTotalDocs] = useState(0);
   const [view, setView] = useState("list");
   const [search, setSearch] = useState("");
   const [filterScope, setFilterScope] = useState("all");
@@ -40,11 +44,16 @@ export default function Appointments() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchAppointments()
-      .then((res) => setAppointments(res.data))
+    setLoading(true);
+    fetchAppointments({ page: currentPage, limit: rowsPerPage })
+      .then((res) => {
+        setAppointments(res.data.data || []);
+        setTotalPages(res.data.totalPages);
+        setTotalDocs(res.data.totalItems);
+      })
       .catch(() => setError("Erro ao carregar agendamentos"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [currentPage, rowsPerPage]);
 
   const patchStatus = (id, status) => {
     const appt = appointments.find((a) => a._id === id);
@@ -247,7 +256,7 @@ export default function Appointments() {
 
         {view === "list" ? (
           <AppointmentTable
-            data={filtered}
+            data={appointments}
             onConfirm={(id) => patchStatus(id, "Confirmado")}
             onEdit={(appt) => setModalData(appt)}
             onCancel={(id) => patchStatus(id, "Cancelado")}
@@ -263,6 +272,20 @@ export default function Appointments() {
             setFilterStatus={setFilterStatus}
             view={view}
             setView={setView}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            totalPages={totalPages}
+            onReload={() =>
+              fetchAppointments({ page: currentPage, limit: rowsPerPage }).then(
+                (res) => {
+                  setAppointments(res.data.data);
+                  setTotalPages(res.data.totalPages);
+                  setTotalDocs(res.data.totalItems);
+                }
+              )
+            }
           />
         ) : (
           <div className="flex flex-col lg:flex-row gap-4">

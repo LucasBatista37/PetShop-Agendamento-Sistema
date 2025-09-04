@@ -56,7 +56,9 @@ export const logoutUser = async () => {
 };
 
 export const fetchDashboardStats = () => api.get("/dashboard/stats");
-export const fetchAppointments = () => api.get("/appointments");
+export const fetchAppointments = async ({ page = 1, limit = 10 }) => {
+  return api.get(`/appointments?page=${page}&limit=${limit}`);
+};
 
 export const createAppointment = (data) =>
   api.post("/appointments", {
@@ -132,7 +134,7 @@ export const createCheckoutSession = async (priceId, customerEmail) => {
       priceId,
       customerEmail,
     });
-    return res.data.url; // retorna URL de checkout
+    return res.data.url;
   } catch (err) {
     console.error("Erro ao criar sessão de checkout:", err);
     throw err;

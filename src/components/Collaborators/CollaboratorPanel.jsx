@@ -2,6 +2,7 @@ import React from "react";
 import CollaboratorFilters from "./CollaboratorFilters";
 import CardView from "./CardView";
 import ListView from "./ListView";
+import CollaboratorPagination from "./CollaboratorPagination";
 
 export default function CollaboratorPanel({
   search,
@@ -10,6 +11,13 @@ export default function CollaboratorPanel({
   setView,
   data,
   onDelete,
+  rowsPerPage,
+  setRowsPerPage,
+  currentPage,
+  totalPages,
+  goToPage,
+  prevPage,
+  nextPage,
 }) {
   return (
     <div className="bg-white rounded-xl shadow">
@@ -19,7 +27,7 @@ export default function CollaboratorPanel({
           setSearch={setSearch}
           view={view}
           setView={setView}
-          total={data.length} 
+          total={data.length}
         />
       </div>
 
@@ -30,6 +38,16 @@ export default function CollaboratorPanel({
           <CardView data={data} onDelete={onDelete} />
         )}
       </div>
+
+      <CollaboratorPagination
+        rowsPerPage={rowsPerPage}
+        setRowsPerPage={setRowsPerPage}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        goToPage={goToPage}
+        prevPage={prevPage}
+        nextPage={nextPage}
+      />
     </div>
   );
 }

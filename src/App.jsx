@@ -23,7 +23,6 @@ import Collaborators from "./components/Collaborators";
 import AcceptInvite from "./components/Collaborators/AcceptInvite";
 import PrivateRoute from "./components/PrivateRoute";
 
-// Novos componentes de Stripe
 const StripeSuccess = () => (
   <div className="p-6 text-center">
     <h1 className="text-2xl font-bold mb-4">Pagamento aprovado!</h1>

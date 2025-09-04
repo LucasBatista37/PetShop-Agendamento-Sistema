@@ -12,7 +12,6 @@ export default function Success() {
   return <div className="p-6">Pagamento aprovado!</div>;
 }
 
-// Cancel.jsx
 export default function Cancel() {
   return <div className="p-6">Pagamento cancelado ou falhou.</div>;
 }

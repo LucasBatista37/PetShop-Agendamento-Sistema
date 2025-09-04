@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 
 import AddCollaboratorModal from "./AddCollaboratorModal";
 import CollaboratorPanel from "./CollaboratorPanel";
-
 import PrimaryButton from "@/components/ui/PrimaryButton";
 
 import {
@@ -19,6 +18,9 @@ export default function Collaborators() {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [collaborators, setCollaborators] = useState([]);
+
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchCollaborators()
@@ -39,6 +41,17 @@ export default function Collaborators() {
       );
     });
   }, [search, collaborators]);
+
+  const totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    return filtered.slice(start, end);
+  }, [filtered, currentPage, rowsPerPage]);
+
+  const goToPage = (page) => setCurrentPage(page);
+  const prevPage = () => setCurrentPage((p) => Math.max(1, p - 1));
+  const nextPage = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
 
   const handleAdd = async (data) => {
     try {
@@ -86,14 +99,23 @@ export default function Collaborators() {
       {loading ? (
         <p className="text-gray-600">Carregando colaboradores...</p>
       ) : (
-        <CollaboratorPanel
-          search={search}
-          setSearch={setSearch}
-          view={view}
-          setView={setView}
-          data={filtered}
-          onDelete={handleDelete}
-        />
+        <>
+          <CollaboratorPanel
+            search={search}
+            setSearch={setSearch}
+            view={view}
+            setView={setView}
+            data={paginatedData}
+            onDelete={handleDelete}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            goToPage={goToPage}
+            prevPage={prevPage}
+            nextPage={nextPage}
+          />
+        </>
       )}
 
       <AddCollaboratorModal

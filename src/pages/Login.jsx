@@ -90,7 +90,7 @@ export default function Login() {
           <div className="relative">
             <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
-              type={showPassword ? "text" : "password"} // 👈 alterna
+              type={showPassword ? "text" : "password"} 
               name="password"
               value={form.password}
               onChange={handleChange}
