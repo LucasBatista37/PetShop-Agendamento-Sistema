@@ -51,7 +51,7 @@ export const logoutUser = async () => {
     console.error("Erro ao realizar logout:", error);
   } finally {
     setAuthToken(null);
-    window.location.href = "/login"; 
+    window.location.href = "/login";
   }
 };
 
@@ -125,5 +125,18 @@ export const acceptInvite = (data) =>
 export const fetchCollaborators = () => api.get("/collaborators");
 
 export const deleteCollaborator = (id) => api.delete(`/collaborators/${id}`);
+
+export const createCheckoutSession = async (priceId, customerEmail) => {
+  try {
+    const res = await api.post("/stripe/create-checkout-session", {
+      priceId,
+      customerEmail,
+    });
+    return res.data.url; // retorna URL de checkout
+  } catch (err) {
+    console.error("Erro ao criar sessão de checkout:", err);
+    throw err;
+  }
+};
 
 export default api;

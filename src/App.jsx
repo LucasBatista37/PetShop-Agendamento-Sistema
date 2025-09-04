@@ -23,6 +23,23 @@ import Collaborators from "./components/Collaborators";
 import AcceptInvite from "./components/Collaborators/AcceptInvite";
 import PrivateRoute from "./components/PrivateRoute";
 
+// Novos componentes de Stripe
+const StripeSuccess = () => (
+  <div className="p-6 text-center">
+    <h1 className="text-2xl font-bold mb-4">Pagamento aprovado!</h1>
+    <p className="text-gray-700">Sua assinatura foi ativada com sucesso.</p>
+  </div>
+);
+
+const StripeCancel = () => (
+  <div className="p-6 text-center">
+    <h1 className="text-2xl font-bold mb-4">Pagamento cancelado</h1>
+    <p className="text-gray-700">
+      O pagamento não foi concluído. Tente novamente.
+    </p>
+  </div>
+);
+
 function App() {
   return (
     <>
@@ -52,6 +69,9 @@ function App() {
           <Route path="/help/:slug" element={<HelpDetail />} />
           <Route path="/settings" element={<AccountSettings />} />
           <Route path="/collaborators" element={<Collaborators />} />
+
+          <Route path="/success" element={<StripeSuccess />} />
+          <Route path="/cancel" element={<StripeCancel />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

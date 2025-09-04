@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import api, { logoutUser } from "@/api/api";
+import api, { logoutUser, createCheckoutSession } from "@/api/api";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -37,7 +37,7 @@ export default function Sidebar({ isOpen, onClose }) {
       isActive ? "bg-indigo-100 font-medium" : ""
     }`;
 
-  const handleLogout = async () => {
+  const logoutUser = async () => {
     try {
       await api.post("/auth/logout");
     } catch (err) {
@@ -45,6 +45,19 @@ export default function Sidebar({ isOpen, onClose }) {
     } finally {
       logout();
       navigate("/login", { replace: true });
+    }
+  };
+
+  const handleUpgrade = async () => {
+    if (!user.email) return;
+
+    try {
+      const priceId = import.meta.env.VITE_STRIPE_PRICE_ID;
+      const checkoutUrl = await createCheckoutSession(priceId, user.email);
+      window.location.href = checkoutUrl; // redireciona para Stripe
+    } catch (err) {
+      console.error("Falha ao iniciar o pagamento:", err);
+      alert("Não foi possível iniciar o pagamento. Tente novamente.");
     }
   };
 
@@ -115,6 +128,14 @@ export default function Sidebar({ isOpen, onClose }) {
           </ul>
         </div>
       </nav>
+
+      <div className="mx-4 mb-6 p-4 bg-indigo-50 rounded-lg text-center">
+        {user.subscription?.status === "active" ? (
+          <p className="text-green-600 font-semibold">Plano Premium ativo</p>
+        ) : (
+          <button onClick={handleUpgrade}>Upgrade</button>
+        )}
+      </div>
 
       <div className="px-4 pb-6">
         <div className="flex items-center gap-3 mb-4">

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaUser, FaEnvelope, FaPhoneAlt, FaLock } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaPhoneAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import Modal from "@/components/Modal";
 import api, { setAuthToken } from "@/api/api";
 import { notifySuccess, notifyError } from "@/utils/Toast";
+import { helpTopics } from "@/data/helpData";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -21,6 +22,12 @@ export default function Register() {
 
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const termos = helpTopics[5];
+  const politica = helpTopics[6];
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -68,7 +75,15 @@ export default function Register() {
       );
       navigate("/verifique-email", { replace: true });
     } catch (err) {
-      notifyError(err.response?.data?.message || "Erro ao registrar.");
+      const backendErrors = err.response?.data?.errors;
+      let message = err.response?.data?.message || "Erro ao registrar.";
+
+      if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+        message = backendErrors[0].msg;
+      }
+
+      setError(message);
+      notifyError(message);
     } finally {
       setLoading(false);
     }
@@ -150,14 +165,21 @@ export default function Register() {
             <div className="relative">
               <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={form.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full rounded-lg border border-gray-300 pl-11 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 pl-11 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
           </div>
 
@@ -168,14 +190,21 @@ export default function Register() {
             <div className="relative">
               <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 value={form.confirmPassword}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full rounded-lg border border-gray-300 pl-11 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 pl-11 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
           </div>
         </div>
@@ -236,97 +265,31 @@ export default function Register() {
       <Modal
         isOpen={showTerms}
         onClose={() => setShowTerms(false)}
-        title="Termos de Uso"
+        title={termos.title}
       >
-        <p>
-          Bem-vindo ao PetCare! Ao criar uma conta e utilizar nossos serviços,
-          você concorda em cumprir integralmente estes Termos de Uso.
-        </p>
-
-        <p>
-          <strong>1. Cadastro:</strong> Para utilizar nossa plataforma, é
-          necessário fornecer informações verdadeiras, completas e atualizadas.
-          Você é responsável por manter suas credenciais de acesso em segurança.
-        </p>
-
-        <p>
-          <strong>2. Uso Adequado:</strong> É proibido utilizar o PetCare para
-          qualquer finalidade ilegal, abusiva ou que infrinja direitos de
-          terceiros. Qualquer violação poderá resultar em suspensão ou
-          cancelamento de sua conta.
-        </p>
-
-        <p>
-          <strong>3. Propriedade Intelectual:</strong> Todo o conteúdo da
-          plataforma, incluindo textos, imagens, logotipos e códigos-fonte, é de
-          propriedade exclusiva do PetCare ou de seus licenciadores, sendo
-          protegido por leis de direitos autorais.
-        </p>
-
-        <p>
-          <strong>4. Modificações:</strong> O PetCare se reserva o direito de
-          alterar estes Termos de Uso a qualquer momento, sendo de
-          responsabilidade do usuário verificar periodicamente as atualizações.
-        </p>
-
-        <p>
-          <strong>5. Contato:</strong> Em caso de dúvidas ou sugestões sobre
-          estes Termos, entre em contato com nossa equipe de suporte através dos
-          canais oficiais.
-        </p>
-
-        <p>Última atualização: 23/06/2025.</p>
+        <div className="space-y-4">
+          {termos.details.map((item) => (
+            <div key={item.id}>
+              <h3 className="font-semibold text-gray-800">{item.heading}</h3>
+              <p className="text-gray-600 text-sm">{item.content}</p>
+            </div>
+          ))}
+        </div>
       </Modal>
 
       <Modal
         isOpen={showPrivacy}
         onClose={() => setShowPrivacy(false)}
-        title="Política de Privacidade"
+        title={politica.title}
       >
-        <p>
-          Esta Política de Privacidade descreve como o PetCare coleta, utiliza,
-          armazena e protege suas informações pessoais.
-        </p>
-
-        <p>
-          <strong>1. Coleta de Informações:</strong> Coletamos informações
-          pessoais fornecidas voluntariamente por você no momento do cadastro,
-          como nome, e-mail e telefone. Também podemos coletar dados de uso e
-          navegação para melhorar nossos serviços.
-        </p>
-
-        <p>
-          <strong>2. Uso das Informações:</strong> Utilizamos seus dados para
-          viabilizar a criação de conta, personalizar sua experiência, enviar
-          comunicações importantes e fornecer suporte técnico.
-        </p>
-
-        <p>
-          <strong>3. Compartilhamento:</strong> O PetCare não compartilha suas
-          informações pessoais com terceiros, exceto quando necessário para
-          cumprir obrigações legais ou mediante seu consentimento expresso.
-        </p>
-
-        <p>
-          <strong>4. Segurança:</strong> Adotamos medidas de segurança técnicas
-          e organizacionais para proteger seus dados contra acesso não
-          autorizado, perda ou destruição.
-        </p>
-
-        <p>
-          <strong>5. Direitos do Usuário:</strong> Você pode, a qualquer
-          momento, acessar, corrigir ou excluir seus dados pessoais, bem como
-          revogar o consentimento, entrando em contato com nossa equipe de
-          suporte.
-        </p>
-
-        <p>
-          <strong>6. Alterações:</strong> Esta Política poderá ser atualizada
-          periodicamente. Recomenda-se revisá-la regularmente para estar ciente
-          de eventuais modificações.
-        </p>
-
-        <p>Última atualização: 23/06/2025.</p>
+        <div className="space-y-4">
+          {politica.details.map((item) => (
+            <div key={item.id}>
+              <h3 className="font-semibold text-gray-800">{item.heading}</h3>
+              <p className="text-gray-600 text-sm">{item.content}</p>
+            </div>
+          ))}
+        </div>
       </Modal>
     </>
   );

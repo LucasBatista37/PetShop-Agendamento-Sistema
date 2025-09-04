@@ -1,7 +1,10 @@
 import React, { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { FaUser, FaEnvelope, FaPhoneAlt, FaLock } from "react-icons/fa";
+import Modal from "@/components/Modal";
 import { acceptInvite } from "@/api/api";
-import { toast } from "react-toastify";
+import { notifySuccess, notifyError } from "@/utils/Toast";
+import { helpTopics } from "@/data/helpData";
 
 export default function AcceptInvite() {
   const [searchParams] = useSearchParams();
@@ -12,65 +15,253 @@ export default function AcceptInvite() {
 
   const [form, setForm] = useState({
     name: "",
+    email: email || "",
+    phone: "",
     password: "",
+    confirmPassword: "",
+    acceptTerms: false,
   });
-
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
+  const termos = helpTopics[5]; 
+  const politica = helpTopics[6]; 
+  
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm({
+      ...form,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    if (!form.name || !form.password) {
-      toast.error("Preencha todos os campos.");
+    const { name, password, confirmPassword, acceptTerms } = form;
+
+    if (!name || !password || !confirmPassword) {
+      setError("Preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("As senhas não conferem.");
+      return;
+    }
+
+    if (!acceptTerms) {
+      setError(
+        "Você deve aceitar os Termos de Uso e a Política de Privacidade."
+      );
       return;
     }
 
     try {
       setLoading(true);
-      console.log("Dados enviados:", { ...form, email, token });
-
-      await acceptInvite({ ...form, email, token });
-      toast.success("Convite aceito! Agora você pode fazer login.");
+      await acceptInvite({ ...form, token });
+      notifySuccess("Convite aceito! Agora você pode fazer login.");
       navigate("/login");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Erro ao aceitar convite.");
+      notifyError(err.response?.data?.message || "Erro ao aceitar convite.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 bg-white shadow p-6 rounded-lg">
-      <h2 className="text-2xl font-bold mb-4">Aceitar Convite</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="name"
-          placeholder="Seu nome"
-          value={form.name}
-          onChange={handleChange}
-          className="w-full border rounded px-3 py-2"
-          required
-        />
-        <input
-          name="password"
-          type="password"
-          placeholder="Crie uma senha"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full border rounded px-3 py-2"
-          required
-        />
+    <>
+      <div className="mb-10 text-center">
+        <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-800">
+          Aceitar Convite
+        </h1>
+        <p className="mt-2 text-sm lg:text-base text-gray-500">
+          Complete seus dados para acessar o PetCare
+        </p>
+      </div>
+
+      {error && (
+        <div className="mb-6 text-red-600 bg-red-100 p-2 rounded">{error}</div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-600">
+            Nome
+          </label>
+          <div className="relative">
+            <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Seu nome completo"
+              className="w-full rounded-lg border border-gray-300 pl-11 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-600">
+            E-mail
+          </label>
+          <div className="relative">
+            <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="seu@exemplo.com"
+              readOnly
+              className="w-full bg-gray-100 cursor-not-allowed rounded-lg border border-gray-300 pl-11 pr-4 py-2.5 text-gray-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm font-medium text-gray-600">
+            Telefone (opcional)
+          </label>
+          <div className="relative">
+            <FaPhoneAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="tel"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="(11) 99999-0000"
+              className="w-full rounded-lg border border-gray-300 pl-11 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-600">
+              Senha
+            </label>
+            <div className="relative">
+              <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-gray-300 pl-11 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block mb-1 text-sm font-medium text-gray-600">
+              Confirmar Senha
+            </label>
+            <div className="relative">
+              <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="password"
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-gray-300 pl-11 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-start">
+          <input
+            type="checkbox"
+            name="acceptTerms"
+            checked={form.acceptTerms}
+            onChange={handleChange}
+            className="mt-1 mr-2"
+            required
+          />
+          <p className="text-sm text-gray-600">
+            Eu li e aceito os{" "}
+            <button
+              type="button"
+              onClick={() => setShowTerms(true)}
+              className="text-indigo-600 hover:underline"
+            >
+              Termos de Uso
+            </button>{" "}
+            e a{" "}
+            <button
+              type="button"
+              onClick={() => setShowPrivacy(true)}
+              className="text-indigo-600 hover:underline"
+            >
+              Política de Privacidade
+            </button>
+            .
+          </p>
+        </div>
+
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+          className={`w-full py-3 rounded-lg font-medium text-white transition ${
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-indigo-600 hover:bg-indigo-700"
+          }`}
         >
-          {loading ? "Enviando..." : "Aceitar convite"}
+          {loading ? "Enviando..." : "Aceitar Convite"}
         </button>
       </form>
-    </div>
+
+      <p className="mt-10 text-sm text-center text-gray-500">
+        Já possui conta?{" "}
+        <span
+          onClick={() => navigate("/login")}
+          className="text-indigo-600 font-medium hover:underline cursor-pointer"
+        >
+          Entrar
+        </span>
+      </p>
+
+      <Modal
+        isOpen={showTerms}
+        onClose={() => setShowTerms(false)}
+        title={termos.title}
+      >
+        <div className="space-y-4">
+          {termos.details.map((item) => (
+            <div key={item.id}>
+              <h3 className="font-semibold text-gray-800">{item.heading}</h3>
+              <p className="text-gray-600 text-sm">{item.content}</p>
+            </div>
+          ))}
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showPrivacy}
+        onClose={() => setShowPrivacy(false)}
+        title={politica.title}
+      >
+        <div className="space-y-4">
+          {politica.details.map((item) => (
+            <div key={item.id}>
+              <h3 className="font-semibold text-gray-800">{item.heading}</h3>
+              <p className="text-gray-600 text-sm">{item.content}</p>
+            </div>
+          ))}
+        </div>
+      </Modal>
+    </>
   );
 }
