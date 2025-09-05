@@ -99,12 +99,15 @@ export default function Sidebar({ isOpen, onClose }) {
                 Serviços
               </NavLink>
             </li>
-            <li>
-              <NavLink to="/collaborators" className={navLinkClass}>
-                <FaUsers className="w-5 h-5" />
-                Colaboradores
-              </NavLink>
-            </li>
+
+            {user.role !== "collaborator" && (
+              <li>
+                <NavLink to="/collaborators" className={navLinkClass}>
+                  <FaUsers className="w-5 h-5" />
+                  Colaboradores
+                </NavLink>
+              </li>
+            )}
           </ul>
         </div>
 
@@ -130,7 +133,11 @@ export default function Sidebar({ isOpen, onClose }) {
       </nav>
 
       <div className="mx-4 mb-6 p-4 bg-indigo-50 rounded-lg text-center">
-        {user.subscription?.status === "active" ? (
+        {user.role === "collaborator" ? (
+          <p className="text-gray-500 font-semibold">
+            Upgrade indisponível para colaboradores
+          </p>
+        ) : user.subscription?.status === "active" ? (
           <p className="text-green-600 font-semibold">Plano Premium ativo</p>
         ) : (
           <button onClick={handleUpgrade}>Upgrade</button>

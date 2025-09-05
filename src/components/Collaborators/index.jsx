@@ -12,6 +12,24 @@ import {
   deleteCollaborator,
 } from "@/api/api";
 
+const mapUserForUI = (u) => {
+  const isVerified = !!u.isVerified;
+  const pendingInvitation = !!u.pendingInvitation;
+  const status = pendingInvitation ? "Pendente" : isVerified ? "Ativo" : "Inativo";
+
+  return {
+    _id: u._id,
+    name: u.name || "",
+    email: u.email || "",
+    department: u.department || "",
+    role: u.role || "collaborator",
+    inviteAcceptedAt: u.inviteAcceptedAt || null,
+    isVerified,
+    pendingInvitation,
+    status,
+  };
+};
+
 export default function Collaborators() {
   const [view, setView] = useState("list");
   const [search, setSearch] = useState("");
@@ -25,7 +43,8 @@ export default function Collaborators() {
   useEffect(() => {
     fetchCollaborators()
       .then((res) => {
-        setCollaborators(res.data.collaborators);
+        const items = (res.data.collaborators || []).map(mapUserForUI);
+        setCollaborators(items);
       })
       .catch(() => toast.error("Erro ao carregar colaboradores"))
       .finally(() => setLoading(false));
@@ -55,12 +74,40 @@ export default function Collaborators() {
 
   const handleAdd = async (data) => {
     try {
-      await inviteCollaborator({
+      const res = await inviteCollaborator({
         email: data.email,
         department: data.department,
       });
+
       toast.success("Convite enviado com sucesso!");
       setShowModal(false);
+
+      if (res?.data?.invite) {
+        const invite = res.data.invite;
+        setCollaborators((prev) => [mapUserForUI({
+          _id: invite._id || `inv_${Date.now()}`,
+          name: invite.name || "",
+          email: invite.email,
+          department: invite.department,
+          role: "collaborator",
+          inviteAcceptedAt: null,
+          isVerified: false,
+          pendingInvitation: true,
+        }), ...prev]);
+      } else {
+        const temp = {
+          _id: `inv_${Date.now()}`,
+          name: data.name || "",
+          email: data.email,
+          department: data.department || "",
+          role: "collaborator",
+          inviteAcceptedAt: null,
+          isVerified: false,
+          pendingInvitation: true,
+          status: "Pendente",
+        };
+        setCollaborators((prev) => [temp, ...prev]);
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Erro ao enviar convite");
     }
@@ -70,8 +117,13 @@ export default function Collaborators() {
     if (!window.confirm("Deseja excluir este colaborador?")) return;
 
     try {
-      await deleteCollaborator(id);
-      setCollaborators((prev) => prev.filter((c) => c._id !== id));
+      if (String(id).startsWith("inv_")) {
+        setCollaborators((prev) => prev.filter((c) => c._id !== id));
+      } else {
+        await deleteCollaborator(id);
+        setCollaborators((prev) => prev.filter((c) => c._id !== id));
+      }
+
       toast.success("Colaborador excluído com sucesso!");
     } catch (err) {
       toast.error("Erro ao excluir colaborador");
@@ -107,7 +159,7 @@ export default function Collaborators() {
             setView={setView}
             data={paginatedData}
             onDelete={handleDelete}
-            rowsPerPage={rowsPerPage}
+            rowsPerPage={rowsPerPage} 
             setRowsPerPage={setRowsPerPage}
             currentPage={currentPage}
             totalPages={totalPages}

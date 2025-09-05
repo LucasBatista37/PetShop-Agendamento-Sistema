@@ -1,7 +1,23 @@
 import React from "react";
 import { FaTrash } from "react-icons/fa";
 
+// Recebe objetos que já possuem: isVerified, pendingInvitation, inviteAcceptedAt e status (ou calcula)
 export default function ListView({ data, onDelete }) {
+  const formatDate = (d) => {
+    if (!d) return "Aguardando aceite";
+    try {
+      return new Date(d).toLocaleDateString("pt-BR");
+    } catch {
+      return "Aguardando aceite";
+    }
+  };
+
+  const getStatusClass = (c) => {
+    if (c.pendingInvitation) return "bg-yellow-100 text-yellow-700";
+    if (c.isVerified) return "bg-blue-100 text-blue-700";
+    return "bg-pink-100 text-pink-700";
+  };
+
   return (
     <div className="overflow-x-auto rounded-lg shadow bg-white">
       <table className="min-w-full divide-y divide-gray-200 bg-white rounded-md overflow-hidden">
@@ -40,21 +56,19 @@ export default function ListView({ data, onDelete }) {
                 {c.role === "admin" ? "Administrador" : "Colaborador"}
               </td>
               <td className="px-4 py-3 text-sm text-gray-600">
-                {c.inviteAcceptedAt
-                  ? new Date(c.inviteAcceptedAt).toLocaleDateString()
-                  : "Aguardando aceite"}
+                {formatDate(c.inviteAcceptedAt)}
               </td>
               <td className="px-4 py-3">
                 <span
-                  className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    c.status === "Ativo"
-                      ? "bg-blue-100 text-blue-700"
-                      : c.status === "Pendente"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-pink-100 text-pink-700"
-                  }`}
+                  className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusClass(
+                    c
+                  )}`}
                 >
-                  {c.status || "Pendente"}
+                  {c.pendingInvitation
+                    ? "Pendente"
+                    : c.isVerified
+                    ? "Ativo"
+                    : "Inativo"}
                 </span>
               </td>
               <td className="px-4 py-3 text-right">
