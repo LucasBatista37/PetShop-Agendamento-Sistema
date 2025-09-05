@@ -54,7 +54,7 @@ export default function Sidebar({ isOpen, onClose }) {
     try {
       const priceId = import.meta.env.VITE_STRIPE_PRICE_ID;
       const checkoutUrl = await createCheckoutSession(priceId, user.email);
-      window.location.href = checkoutUrl; // redireciona para Stripe
+      window.location.href = checkoutUrl; 
     } catch (err) {
       console.error("Falha ao iniciar o pagamento:", err);
       alert("Não foi possível iniciar o pagamento. Tente novamente.");
