@@ -15,7 +15,8 @@ import { Dialog } from "@headlessui/react";
 import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "../../utils/Toast";
 import * as XLSX from "xlsx";
-import { FaFileExport } from "react-icons/fa";
+import { FaFileExport, FaPlus } from "react-icons/fa";
+import PrimaryButton from "@/components/ui/PrimaryButton";
 
 const locales = { pt: ptLocale };
 const localizer = dateFnsLocalizer({
@@ -30,6 +31,10 @@ export default function Appointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalDocs, setTotalDocs] = useState(0);
   const [view, setView] = useState("list");
   const [search, setSearch] = useState("");
   const [filterScope, setFilterScope] = useState("all");
@@ -39,11 +44,16 @@ export default function Appointments() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchAppointments()
-      .then((res) => setAppointments(res.data))
+    setLoading(true);
+    fetchAppointments({ page: currentPage, limit: rowsPerPage })
+      .then((res) => {
+        setAppointments(res.data.data || []);
+        setTotalPages(res.data.totalPages);
+        setTotalDocs(res.data.totalItems);
+      })
       .catch(() => setError("Erro ao carregar agendamentos"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [currentPage, rowsPerPage]);
 
   const patchStatus = (id, status) => {
     const appt = appointments.find((a) => a._id === id);
@@ -224,25 +234,29 @@ export default function Appointments() {
               Gerenciamento de Agendamentos
             </h1>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <button
+              <PrimaryButton
                 onClick={() => setExportModalOpen(true)}
-                className="w-full sm:w-auto bg-green-600 px-4 sm:px-6 py-2 text-base sm:text-lg text-white rounded-md hover:bg-green-700 transition flex items-center justify-center"
+                icon={FaFileExport}
+                color="green"
+                fullWidth
               >
-                <FaFileExport className="mr-2" /> Exportar
-              </button>
-              <button
+                Exportar
+              </PrimaryButton>
+
+              <PrimaryButton
                 onClick={() => setModalData({})}
-                className="w-full sm:w-auto bg-indigo-600 px-4 sm:px-6 py-2 text-base sm:text-lg text-white rounded-md hover:bg-indigo-700 transition"
+                icon={FaPlus}
+                color="indigo"
               >
-                + Novo
-              </button>
+                Novo
+              </PrimaryButton>
             </div>
           </div>
         </header>
 
         {view === "list" ? (
           <AppointmentTable
-            data={filtered}
+            data={appointments}
             onConfirm={(id) => patchStatus(id, "Confirmado")}
             onEdit={(appt) => setModalData(appt)}
             onCancel={(id) => patchStatus(id, "Cancelado")}
@@ -258,6 +272,20 @@ export default function Appointments() {
             setFilterStatus={setFilterStatus}
             view={view}
             setView={setView}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            rowsPerPage={rowsPerPage}
+            setRowsPerPage={setRowsPerPage}
+            totalPages={totalPages}
+            onReload={() =>
+              fetchAppointments({ page: currentPage, limit: rowsPerPage }).then(
+                (res) => {
+                  setAppointments(res.data.data);
+                  setTotalPages(res.data.totalPages);
+                  setTotalDocs(res.data.totalItems);
+                }
+              )
+            }
           />
         ) : (
           <div className="flex flex-col lg:flex-row gap-4">

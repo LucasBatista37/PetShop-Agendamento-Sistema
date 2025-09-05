@@ -5,15 +5,12 @@ export default function AuthLayout() {
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
       <div className="bg-white flex flex-col justify-center items-center px-8 py-12">
         <div className="w-full max-w-md">
-          <a href="/" className="flex items-center mb-10">
+          <a href="/" className="flex items-center mb-18">
             <img
-              src="/logo-pet.svg"
+              src="./src/assets/PetCare.png"
               alt="Logotipo PetCare"
-              className="w-8 h-8"
+              className="h-16 w-auto object-contain"
             />
-            <span className="ml-3 text-2xl font-bold text-gray-800">
-              PetCare
-            </span>
           </a>
           <Outlet />
         </div>
@@ -24,10 +21,11 @@ export default function AuthLayout() {
 
         <div className="relative z-10 text-center px-8 max-w-sm">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white mb-4">
-            Gerencie sua clínica e agendamentos.
+            Gerencie seus Agendamentos com Excelência.
           </h2>
           <p className="text-lg text-indigo-200 mb-8">
-            Faça login para acessar seu painel PetCare e acompanhar clientes, pets e serviços.
+            Faça login para acessar seu painel PetCare e acompanhar clientes,
+            pets e serviços.
           </p>
 
           <div className="inline-block bg-white rounded-2xl shadow-2xl overflow-hidden">

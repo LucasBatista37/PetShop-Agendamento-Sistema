@@ -1,17 +1,21 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaUser, FaEnvelope, FaPhoneAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import Modal from "@/components/Modal";
-import api, { setAuthToken } from "@/api/api";
+import { acceptInvite } from "@/api/api";
 import { notifySuccess, notifyError } from "@/utils/Toast";
 import { helpTopics } from "@/data/helpData";
 
-export default function Register() {
+export default function AcceptInvite() {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
+
   const [form, setForm] = useState({
     name: "",
-    email: "",
+    email: email || "",
     phone: "",
     password: "",
     confirmPassword: "",
@@ -40,9 +44,10 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    const { name, email, phone, password, confirmPassword, acceptTerms } = form;
 
-    if (!name || !email || !password || !confirmPassword) {
+    const { name, password, confirmPassword, acceptTerms } = form;
+
+    if (!name || !password || !confirmPassword) {
       setError("Preencha todos os campos obrigatórios.");
       return;
     }
@@ -61,41 +66,24 @@ export default function Register() {
 
     try {
       setLoading(true);
-      const { data } = await api.post("/auth/register", {
-        name,
-        email,
-        phone,
-        password,
-      });
-      if (data.token) {
-        setAuthToken(data.token);
-      }
-      notifySuccess(
-        "Cadastro realizado! Verifique seu e-mail para ativar sua conta."
-      );
-      navigate("/verifique-email", { replace: true });
+      await acceptInvite({ ...form, token });
+      notifySuccess("Convite aceito! Agora você pode fazer login.");
+      navigate("/login");
     } catch (err) {
-      const backendErrors = err.response?.data?.errors;
-      let message = err.response?.data?.message || "Erro ao registrar.";
-
-      if (Array.isArray(backendErrors) && backendErrors.length > 0) {
-        message = backendErrors[0].msg;
-      }
-
-      setError(message);
-      notifyError(message);
+      notifyError(err.response?.data?.message || "Erro ao aceitar convite.");
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <>
       <div className="mb-10 text-center">
         <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-800">
-          Criar uma conta
+          Aceitar Convite
         </h1>
         <p className="mt-2 text-sm lg:text-base text-gray-500">
-          Cadastre-se para começar a usar o PetCare
+          Complete seus dados para acessar o PetCare
         </p>
       </div>
 
@@ -134,8 +122,8 @@ export default function Register() {
               value={form.email}
               onChange={handleChange}
               placeholder="seu@exemplo.com"
-              className="w-full rounded-lg border border-gray-300 pl-11 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              required
+              readOnly
+              className="w-full bg-gray-100 cursor-not-allowed rounded-lg border border-gray-300 pl-11 pr-4 py-2.5 text-gray-500"
             />
           </div>
         </div>
@@ -170,7 +158,7 @@ export default function Register() {
                 value={form.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full rounded-lg border border-gray-300 pl-11 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 pl-11 pr-10 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               />
               <button
@@ -190,12 +178,12 @@ export default function Register() {
             <div className="relative">
               <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
-                type={showConfirmPassword ? "text" : "password"}
+                type={showConfirmPassword ? "text" : "password"} // <-- aqui
                 name="confirmPassword"
                 value={form.confirmPassword}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full rounded-lg border border-gray-300 pl-11 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-lg border border-gray-300 pl-11 pr-10 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 required
               />
               <button
@@ -248,7 +236,7 @@ export default function Register() {
               : "bg-indigo-600 hover:bg-indigo-700"
           }`}
         >
-          {loading ? "Registrando..." : "Registrar"}
+          {loading ? "Enviando..." : "Aceitar Convite"}
         </button>
       </form>
 

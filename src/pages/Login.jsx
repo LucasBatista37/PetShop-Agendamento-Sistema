@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api, { setAuthToken } from "@/api/api";
-import { FaEnvelope, FaLock } from "react-icons/fa";
+import { useAuth } from "@/contexts/AuthContext";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { setUser } = useAuth(); 
+
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false); 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,13 +23,15 @@ export default function Login() {
     setError("");
     const { email, password } = form;
     if (!email || !password) {
-      setError("Preencha e‑mail e senha.");
+      setError("Preencha e-mail e senha.");
       return;
     }
     try {
       setLoading(true);
       const res = await api.post("/auth/login", { email, password });
-      setAuthToken(res.data.token);
+
+      setAuthToken(res.data.accessToken);
+      setUser(res.data.user);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Credenciais inválidas");
@@ -36,9 +42,7 @@ export default function Login() {
 
   const handleResend = async () => {
     try {
-      await api.post("/auth/resend-verification", {
-        email: form.email,
-      });
+      await api.post("/auth/resend-verification", { email: form.email });
       alert("E-mail de verificação reenviado. Verifique sua caixa de entrada.");
     } catch {
       alert("Erro ao reenviar e-mail.");
@@ -49,10 +53,10 @@ export default function Login() {
     <>
       <div className="mb-10 text-center">
         <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-800">
-          Bem‑vindo ao PetCare
+          Bem-vindo ao PetCare
         </h1>
         <p className="mt-2 text-sm lg:text-base text-gray-500">
-          Use seu e‑mail e senha para entrar
+          Use seu e-mail e senha para entrar
         </p>
       </div>
 
@@ -63,7 +67,7 @@ export default function Login() {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block mb-1 text-sm font-medium text-gray-600">
-            E‑mail
+            E-mail
           </label>
           <div className="relative">
             <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -78,6 +82,7 @@ export default function Login() {
             />
           </div>
         </div>
+
         <div>
           <label className="block mb-1 text-sm font-medium text-gray-600">
             Senha
@@ -85,16 +90,24 @@ export default function Login() {
           <div className="relative">
             <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"} 
               name="password"
               value={form.password}
               onChange={handleChange}
               placeholder="••••••••"
-              className="w-full rounded-lg border border-gray-300 pl-11 pr-4 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-300 pl-11 pr-10 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
           </div>
         </div>
+
         <button
           type="submit"
           disabled={loading}
@@ -117,27 +130,6 @@ export default function Login() {
         </button>
       )}
 
-      {/* <div className="flex items-center my-8 gap-4">
-        <hr className="flex-1 border-gray-300" />
-        <span className="text-sm text-gray-500 whitespace-nowrap">
-          ou entre com
-        </span>
-        <hr className="flex-1 border-gray-300" />
-      </div>
-
-      <div className="flex justify-center gap-5">
-        {[
-          { src: "/google-icon.svg", alt: "Google" },
-        ].map(({ src, alt }) => (
-          <button
-            key={alt}
-            className="w-11 h-11 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition"
-          >
-            <img src={src} alt={alt} className="w-5 h-5" />
-          </button>
-        ))}
-      </div> */}
-
       <button
         type="button"
         onClick={() => navigate("/forgot-password")}
@@ -152,7 +144,7 @@ export default function Login() {
           onClick={() => navigate("/register")}
           className="text-indigo-600 font-medium hover:underline cursor-pointer"
         >
-          Cadastre‑se
+          Cadastre-se
         </span>
       </p>
     </>

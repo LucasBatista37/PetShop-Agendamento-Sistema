@@ -19,6 +19,25 @@ import AccountSettings from "./components/Settings/Settings";
 import ForgotPassword from "./components/Settings/ForgotPassword";
 import ResetPassword from "./components/Settings/ResetPassword";
 import HelpDetail from "./components/Help/HelpDetails";
+import Collaborators from "./components/Collaborators";
+import AcceptInvite from "./components/Collaborators/AcceptInvite";
+import PrivateRoute from "./components/PrivateRoute";
+
+const StripeSuccess = () => (
+  <div className="p-6 text-center">
+    <h1 className="text-2xl font-bold mb-4">Pagamento aprovado!</h1>
+    <p className="text-gray-700">Sua assinatura foi ativada com sucesso.</p>
+  </div>
+);
+
+const StripeCancel = () => (
+  <div className="p-6 text-center">
+    <h1 className="text-2xl font-bold mb-4">Pagamento cancelado</h1>
+    <p className="text-gray-700">
+      O pagamento não foi concluído. Tente novamente.
+    </p>
+  </div>
+);
 
 function App() {
   return (
@@ -27,23 +46,35 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verifique-email" element={<VerifyEmail />} />
+          <Route path="/email-verificado" element={<EmailVerify />} />
+          <Route path="/aceitar-convite" element={<AcceptInvite />} />
         </Route>
 
-        <Route element={<MainLayout />}>
+        <Route
+          element={
+            <PrivateRoute>
+              <MainLayout />
+            </PrivateRoute>
+          }
+        >
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/services" element={<ServicesConfig />} />
           <Route path="/services/new" element={<AddServiceModal />} />
           <Route path="/help" element={<HelpCenter />} />
           <Route path="/help/:slug" element={<HelpDetail />} />
-          <Route path="/verifique-email" element={<VerifyEmail />} />
-          <Route path="/email-verificado" element={<EmailVerify />} />
           <Route path="/settings" element={<AccountSettings />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/collaborators" element={<Collaborators />} />
+
+          <Route path="/success" element={<StripeSuccess />} />
+          <Route path="/cancel" element={<StripeCancel />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
         <Route
           path="*"
           element={<p className="p-6">Página não encontrada</p>}

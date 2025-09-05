@@ -6,24 +6,24 @@ import {
   FaQuestionCircle,
   FaSignOutAlt,
   FaTimes,
+  FaUsers,
 } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import api from "@/api/api";
+import api, { logoutUser, createCheckoutSession } from "@/api/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Sidebar({ isOpen, onClose }) {
   const [user, setUser] = useState({ name: "", email: "" });
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
       try {
-        const res = await api.get("/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await api.get("/auth/me");
         setUser(res.data.user);
       } catch (error) {
         console.error("Erro ao buscar usuário", error);
@@ -37,13 +37,33 @@ export default function Sidebar({ isOpen, onClose }) {
       isActive ? "bg-indigo-100 font-medium" : ""
     }`;
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
+  const logoutUser = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+      console.error("Erro ao sair:", err);
+    } finally {
+      logout();
+      navigate("/login", { replace: true });
+    }
+  };
+
+  const handleUpgrade = async () => {
+    if (!user.email) return;
+
+    try {
+      const priceId = import.meta.env.VITE_STRIPE_PRICE_ID;
+      const checkoutUrl = await createCheckoutSession(priceId, user.email);
+      window.location.href = checkoutUrl; 
+    } catch (err) {
+      console.error("Falha ao iniciar o pagamento:", err);
+      alert("Não foi possível iniciar o pagamento. Tente novamente.");
+    }
   };
 
   return (
     <aside
+      onClick={(e) => e.stopPropagation()}
       className={`fixed z-40 md:static top-0 left-0 h-full w-64 bg-white border-r flex flex-col justify-between transform transition-transform duration-300 ${
         isOpen ? "translate-x-0" : "-translate-x-full"
       } md:translate-x-0`}
@@ -79,6 +99,15 @@ export default function Sidebar({ isOpen, onClose }) {
                 Serviços
               </NavLink>
             </li>
+
+            {user.role !== "collaborator" && (
+              <li>
+                <NavLink to="/collaborators" className={navLinkClass}>
+                  <FaUsers className="w-5 h-5" />
+                  Colaboradores
+                </NavLink>
+              </li>
+            )}
           </ul>
         </div>
 
@@ -88,19 +117,13 @@ export default function Sidebar({ isOpen, onClose }) {
           </p>
           <ul className="space-y-1">
             <li>
-              <NavLink
-                to="/settings"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100"
-              >
+              <NavLink to="/settings" className={navLinkClass}>
                 <FaCog className="w-5 h-5" />
                 Configurações
               </NavLink>
             </li>
             <li>
-              <NavLink
-                to="/help"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-indigo-100"
-              >
+              <NavLink to="/help" className={navLinkClass}>
                 <FaQuestionCircle className="w-5 h-5" />
                 Ajuda
               </NavLink>
@@ -108,6 +131,18 @@ export default function Sidebar({ isOpen, onClose }) {
           </ul>
         </div>
       </nav>
+
+      <div className="mx-4 mb-6 p-4 bg-indigo-50 rounded-lg text-center">
+        {user.role === "collaborator" ? (
+          <p className="text-gray-500 font-semibold">
+            Upgrade indisponível para colaboradores
+          </p>
+        ) : user.subscription?.status === "active" ? (
+          <p className="text-green-600 font-semibold">Plano Premium ativo</p>
+        ) : (
+          <button onClick={handleUpgrade}>Upgrade</button>
+        )}
+      </div>
 
       <div className="px-4 pb-6">
         <div className="flex items-center gap-3 mb-4">
@@ -119,8 +154,9 @@ export default function Sidebar({ isOpen, onClose }) {
             <p className="text-xs text-gray-500">{user.email}</p>
           </div>
         </div>
+
         <button
-          onClick={handleLogout}
+          onClick={logoutUser}
           className="flex items-center gap-3 text-red-500 hover:bg-red-100 px-3 py-2 rounded-lg w-full"
         >
           <FaSignOutAlt className="w-5 h-5" />
