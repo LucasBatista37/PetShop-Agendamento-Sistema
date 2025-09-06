@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
-
+import LogoPetCare from "../assets/PetCare.png";
+  
 export default function AuthLayout() {
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
@@ -7,7 +8,7 @@ export default function AuthLayout() {
         <div className="w-full max-w-md">
           <a href="/" className="flex items-center mb-18">
             <img
-              src="./src/assets/PetCare.png"
+              src={LogoPetCare}
               alt="Logotipo PetCare"
               className="h-16 w-auto object-contain"
             />
@@ -27,14 +28,6 @@ export default function AuthLayout() {
             Faça login para acessar seu painel PetCare e acompanhar clientes,
             pets e serviços.
           </p>
-
-          <div className="inline-block bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <img
-              src="/illustration-pet-dashboard.png"
-              alt="Preview do painel"
-              className="w-full h-auto"
-            />
-          </div>
         </div>
       </div>
     </div>
