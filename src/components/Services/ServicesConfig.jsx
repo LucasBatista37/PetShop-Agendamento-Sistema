@@ -62,7 +62,7 @@ export default function ServicesConfig() {
         <PrimaryButton
           onClick={() => setShowAddModal(true)}
           icon={FaPlus}
-          color="indigo"
+          color="indigo-600"
         >
           Novo Serviço
         </PrimaryButton>

@@ -5,7 +5,7 @@ import clsx from "clsx";
 export default function PrimaryButton({
   children,
   onClick,
-  color = "indigo",
+  color = "indigo-600",
   fullWidth = true,
   icon: Icon,
   type = "button",
@@ -15,12 +15,16 @@ export default function PrimaryButton({
   const baseStyles =
     "rounded-md text-white hover:brightness-110 transition flex items-center justify-center px-4 sm:px-6 py-2 text-base sm:text-lg";
 
-  const colorStyles = {
-    indigo: "bg-indigo-600 hover:bg-indigo-700",
-    green: "bg-green-600 hover:bg-green-700",
-    red: "bg-red-600 hover:bg-red-700",
-    gray: "bg-gray-600 hover:bg-gray-700",
+  const getHoverColor = (color) => {
+    const match = color.match(/-(\d{3})$/);
+    if (!match) return `hover:${color}`;
+    const num = parseInt(match[1]);
+    const hoverNum = Math.min(num + 100, 900); 
+    return `hover:bg-${color.split("-")[0]}-${hoverNum}`;
   };
+
+  const colorClass = `bg-${color}`;
+  const hoverClass = getHoverColor(color);
 
   return (
     <button
@@ -28,7 +32,8 @@ export default function PrimaryButton({
       type={type}
       className={clsx(
         baseStyles,
-        colorStyles[color],
+        colorClass,
+        hoverClass,
         fullWidth ? "w-full sm:w-auto" : "w-fit",
         className
       )}
@@ -43,7 +48,7 @@ export default function PrimaryButton({
 PrimaryButton.propTypes = {
   children: PropTypes.node.isRequired,
   onClick: PropTypes.func,
-  color: PropTypes.oneOf(["indigo", "green", "red", "gray"]),
+  color: PropTypes.string, 
   fullWidth: PropTypes.bool,
   icon: PropTypes.elementType,
   type: PropTypes.string,
