@@ -140,7 +140,7 @@ export default function Collaborators() {
           <PrimaryButton
             onClick={() => setShowModal(true)}
             icon={FaUserPlus}
-            color="indigo"
+            color="indigo-600"
             fullWidth
           >
             Adicionar

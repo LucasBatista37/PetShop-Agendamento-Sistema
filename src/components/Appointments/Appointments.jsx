@@ -5,17 +5,18 @@ import { dateFnsLocalizer } from "react-big-calendar";
 import { AppointmentTable } from "@/components/Appointments";
 import CalendarComponent from "@/components/Appointments/CalendarComponent";
 import NewAppointmentModal from "@/components/Appointments/NewAppointmentModal/NewAppointmentModal";
+import ImportModal from "./ImportModal";
+import ExportModal from "./ExportModal";
 import {
   fetchAppointments,
   createAppointment,
   deleteAppointment,
   updateAppointment,
 } from "@/api/api";
-import { Dialog } from "@headlessui/react";
 import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "../../utils/Toast";
 import * as XLSX from "xlsx";
-import { FaFileExport, FaPlus } from "react-icons/fa";
+import { FaFileExport, FaFileImport, FaPlus } from "react-icons/fa";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 
 const locales = { pt: ptLocale };
@@ -42,6 +43,7 @@ export default function Appointments() {
   const [filterStatus, setFilterStatus] = useState("Todos");
   const [modalData, setModalData] = useState(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -235,10 +237,17 @@ export default function Appointments() {
             </h1>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <PrimaryButton
+                onClick={() => setImportModalOpen(true)}
+                icon={FaFileImport}
+                color="blue-600"
+              >
+                Importar
+              </PrimaryButton>
+
+              <PrimaryButton
                 onClick={() => setExportModalOpen(true)}
                 icon={FaFileExport}
-                color="green"
-                fullWidth
+                color="green-600"
               >
                 Exportar
               </PrimaryButton>
@@ -246,7 +255,7 @@ export default function Appointments() {
               <PrimaryButton
                 onClick={() => setModalData({})}
                 icon={FaPlus}
-                color="indigo"
+                color="indigo-600"
               >
                 Novo
               </PrimaryButton>
@@ -309,6 +318,17 @@ export default function Appointments() {
           </div>
         )}
 
+        <ImportModal
+          isOpen={importModalOpen}
+          onClose={() => setImportModalOpen(false)}
+        />
+        <ExportModal
+          isOpen={exportModalOpen}
+          onClose={() => setExportModalOpen(false)}
+          onExportCSV={exportCSV}
+          onExportXLSX={exportXLSX}
+        />
+
         <NewAppointmentModal
           isOpen={modalData !== null}
           initialData={modalData}
@@ -317,45 +337,6 @@ export default function Appointments() {
           onSave={handleSave}
         />
       </div>
-
-      <Dialog
-        open={exportModalOpen}
-        onClose={() => setExportModalOpen(false)}
-        className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      >
-        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-        <Dialog.Panel className="relative w-full max-w-sm bg-white rounded-lg shadow-lg p-6 space-y-4">
-          <Dialog.Title className="text-lg font-semibold text-gray-800">
-            Escolha o formato de exportação
-          </Dialog.Title>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => {
-                exportCSV();
-                setExportModalOpen(false);
-              }}
-              className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 transition"
-            >
-              CSV
-            </button>
-            <button
-              onClick={() => {
-                exportXLSX();
-                setExportModalOpen(false);
-              }}
-              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
-            >
-              Planilha Excel
-            </button>
-          </div>
-          <button
-            onClick={() => setExportModalOpen(false)}
-            className="mt-4 w-full text-center text-gray-600 hover:text-gray-800 transition"
-          >
-            Cancelar
-          </button>
-        </Dialog.Panel>
-      </Dialog>
 
       <ToastContainer position="bottom-right" />
     </>

@@ -1,7 +1,6 @@
 import React from "react";
 import { FaTrash } from "react-icons/fa";
 
-// Recebe objetos que já possuem: isVerified, pendingInvitation, inviteAcceptedAt e status (ou calcula)
 export default function ListView({ data, onDelete }) {
   const formatDate = (d) => {
     if (!d) return "Aguardando aceite";
