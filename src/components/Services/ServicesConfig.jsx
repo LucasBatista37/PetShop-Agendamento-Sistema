@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import EditServiceModal from "./EditServiceModal";
 import AddServiceModal from "./AddServiceModal";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { fetchServices, deleteService, updateService } from "@/api/api";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 
@@ -12,6 +13,9 @@ export default function ServicesConfig() {
   const [editData, setEditData] = useState(null);
   const [editError, setEditError] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchServices()
@@ -20,13 +24,23 @@ export default function ServicesConfig() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Excluir este serviço?")) return;
+  const openDeleteModal = (service) => {
+    setServiceToDelete(service);
+    setConfirmModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!serviceToDelete) return;
+    setDeleting(true);
     try {
-      await deleteService(id);
-      setServices((prev) => prev.filter((s) => s._id !== id));
+      await deleteService(serviceToDelete._id);
+      setServices((prev) => prev.filter((s) => s._id !== serviceToDelete._id));
+      setConfirmModalOpen(false);
+      setServiceToDelete(null);
     } catch (err) {
       alert("Erro ao excluir serviço");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -76,7 +90,7 @@ export default function ServicesConfig() {
             <ServiceCard
               key={s._id}
               service={s}
-              onDelete={() => handleDelete(s._id)}
+              onDelete={() => openDeleteModal(s)}
               onEdit={() => {
                 setEditData(s);
                 setEditError("");
@@ -99,6 +113,17 @@ export default function ServicesConfig() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onSave={handleAddService}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Serviço"
+        message={`Tem certeza que deseja excluir "${serviceToDelete?.name}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        loading={deleting}
       />
     </div>
   );

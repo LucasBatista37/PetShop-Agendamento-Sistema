@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { parseISO, startOfWeek, getDay, startOfDay } from "date-fns";
+import { parseISO, startOfWeek, getDay, startOfDay, format } from "date-fns";
 import ptLocale from "date-fns/locale/pt";
 import { dateFnsLocalizer } from "react-big-calendar";
 import { AppointmentTable } from "@/components/Appointments";
@@ -7,6 +7,7 @@ import CalendarComponent from "@/components/Appointments/CalendarComponent";
 import NewAppointmentModal from "@/components/Appointments/NewAppointmentModal/NewAppointmentModal";
 import ImportModal from "./ImportModal";
 import ExportModal from "./ExportModal";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import {
   fetchAppointments,
   createAppointment,
@@ -15,14 +16,14 @@ import {
 } from "@/api/api";
 import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "../../utils/Toast";
-import * as XLSX from "xlsx";
 import { FaFileExport, FaFileImport, FaPlus } from "react-icons/fa";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import { exportCSV, exportXLSX } from "@/utils/exportAppointments";
 
 const locales = { pt: ptLocale };
 const localizer = dateFnsLocalizer({
-  format: (date, formatStr) => date.toLocaleString(),
-  parse: (value, formatStr) => parseISO(value),
+  format: (date, formatStr) => format(date, formatStr, { locale: ptLocale }),
+  parse: (value) => parseISO(value),
   startOfWeek: (date) => startOfWeek(date, { locale: ptLocale }),
   getDay,
   locales,
@@ -44,6 +45,7 @@ export default function Appointments() {
   const [modalData, setModalData] = useState(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -94,13 +96,18 @@ export default function Appointments() {
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("Deseja excluir este agendamento?")) return;
-    deleteAppointment(id)
+    setConfirmDelete(id);
+  };
+
+  const confirmDeleteAppointment = () => {
+    if (!confirmDelete) return;
+    deleteAppointment(confirmDelete)
       .then(() => {
-        setAppointments((prev) => prev.filter((a) => a._id !== id));
+        setAppointments((prev) => prev.filter((a) => a._id !== confirmDelete));
         notifySuccess("Agendamento excluído com sucesso");
       })
-      .catch(() => notifyError("Erro ao excluir agendamento"));
+      .catch(() => notifyError("Erro ao excluir agendamento"))
+      .finally(() => setConfirmDelete(null));
   };
 
   const today = startOfDay(new Date());
@@ -121,7 +128,7 @@ export default function Appointments() {
     return base.sort((a, b) => {
       const dtA = new Date(`${a.date}T${a.time}`);
       const dtB = new Date(`${b.date}T${b.time}`);
-      return dtB - dtA;
+      return dtA - dtB;
     });
   }, [appointments, filterScope, filterStatus, search, today]);
 
@@ -142,86 +149,6 @@ export default function Appointments() {
       }),
     [appointments]
   );
-
-  const exportCSV = () => {
-    if (filtered.length === 0) {
-      notifyError("Nenhum agendamento para exportar.");
-      return;
-    }
-    const headers = [
-      "Pet",
-      "Dono",
-      "Telefone",
-      "Serviço Base",
-      "Serviços Extras",
-      "Data",
-      "Hora",
-      "Status",
-      "Notas",
-    ];
-    const rows = filtered.map((a) => [
-      a.petName,
-      a.ownerName,
-      a.ownerPhone,
-      a.baseService?.name || a.baseService || "-",
-      a.extraServices?.map((e) => e.name || e).join(", ") || "-",
-      a.date,
-      a.time,
-      a.status,
-      a.notes || "-",
-    ]);
-    const csv =
-      [headers, ...rows]
-        .map((r) =>
-          r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")
-        )
-        .join("\n") + "\n";
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "agendamentos.csv";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    notifySuccess("Exportação CSV concluída!");
-  };
-
-  const exportXLSX = () => {
-    if (filtered.length === 0) {
-      notifyError("Nenhum agendamento para exportar.");
-      return;
-    }
-    const aoa = [
-      [
-        "Pet",
-        "Dono",
-        "Telefone",
-        "Serviço Base",
-        "Serviços Extras",
-        "Data",
-        "Hora",
-        "Status",
-        "Notas",
-      ],
-      ...filtered.map((a) => [
-        a.petName,
-        a.ownerName,
-        a.ownerPhone,
-        a.baseService?.name || a.baseService || "-",
-        a.extraServices?.map((e) => e.name || e).join(", ") || "-",
-        a.date,
-        a.time,
-        a.status,
-        a.notes || "-",
-      ]),
-    ];
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Agendamentos");
-    XLSX.writeFile(wb, "agendamentos.xlsx");
-    notifySuccess("Exportação Excel concluída!");
-  };
 
   if (loading)
     return <p className="p-4 text-gray-500 text-center">Carregando...</p>;
@@ -265,7 +192,7 @@ export default function Appointments() {
 
         {view === "list" ? (
           <AppointmentTable
-            data={appointments}
+            data={filtered}
             onConfirm={(id) => patchStatus(id, "Confirmado")}
             onEdit={(appt) => setModalData(appt)}
             onCancel={(id) => patchStatus(id, "Cancelado")}
@@ -286,6 +213,7 @@ export default function Appointments() {
             rowsPerPage={rowsPerPage}
             setRowsPerPage={setRowsPerPage}
             totalPages={totalPages}
+            totalDocs={totalDocs}
             onReload={() =>
               fetchAppointments({ page: currentPage, limit: rowsPerPage }).then(
                 (res) => {
@@ -325,16 +253,22 @@ export default function Appointments() {
         <ExportModal
           isOpen={exportModalOpen}
           onClose={() => setExportModalOpen(false)}
-          onExportCSV={exportCSV}
-          onExportXLSX={exportXLSX}
+          onExportCSV={() => exportCSV(filtered)}
+          onExportXLSX={() => exportXLSX(filtered)}
         />
-
         <NewAppointmentModal
           isOpen={modalData !== null}
           initialData={modalData}
           onClose={() => setModalData(null)}
           appointments={appointments}
           onSave={handleSave}
+        />
+        <ConfirmModal
+          isOpen={!!confirmDelete}
+          onClose={() => setConfirmDelete(null)}
+          onConfirm={confirmDeleteAppointment}
+          title="Excluir Agendamento"
+          message="Tem certeza que deseja excluir este agendamento? Esta ação não poderá ser desfeita."
         />
       </div>
 

@@ -54,7 +54,7 @@ export default function Sidebar({ isOpen, onClose }) {
     try {
       const priceId = import.meta.env.VITE_STRIPE_PRICE_ID;
       const checkoutUrl = await createCheckoutSession(priceId, user.email);
-      window.location.href = checkoutUrl; 
+      window.location.href = checkoutUrl;
     } catch (err) {
       console.error("Falha ao iniciar o pagamento:", err);
       alert("Não foi possível iniciar o pagamento. Tente novamente.");
@@ -137,10 +137,18 @@ export default function Sidebar({ isOpen, onClose }) {
           <p className="text-gray-500 font-semibold">
             Upgrade indisponível para colaboradores
           </p>
-        ) : user.subscription?.status === "active" ? (
-          <p className="text-green-600 font-semibold">Plano Premium ativo</p>
+        ) : ["active", "trialing"].includes(user.subscription?.status) ? (
+          <p className="text-green-600 font-semibold">
+            Plano Premium ativo{" "}
+            {user.subscription?.status === "trialing" && "(Teste)"}
+          </p>
         ) : (
-          <button onClick={handleUpgrade}>Upgrade</button>
+          <button
+            onClick={handleUpgrade}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          >
+            Upgrade
+          </button>
         )}
       </div>
 
