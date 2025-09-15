@@ -25,6 +25,8 @@ export default function AppointmentTable({
   rowsPerPage,
   setRowsPerPage,
   totalPages,
+  sortOrder,
+  setSortOrder,
   onReload,
 }) {
   const [selected, setSelected] = useState(null);
@@ -38,13 +40,29 @@ export default function AppointmentTable({
   const prevPage = () => goToPage(currentPage - 1);
   const nextPage = () => goToPage(currentPage + 1);
 
+  const sortedData = [...data].sort((a, b) => {
+    const dtA = new Date(`${a.date}T${a.time}`);
+    const dtB = new Date(`${b.date}T${b.time}`);
+    return sortOrder === "asc" ? dtA - dtB : dtB - dtA;
+  });
+
+  const finalizeAppointment = (id) => {
+    if (onStatusChange) {
+      onStatusChange(id, "Finalizado");
+    }
+    setSelected((prev) =>
+      prev && prev._id === id ? { ...prev, status: "Finalizado" } : prev
+    );
+  };
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       {selected && (
         <AppointmentDetails
-          open={!!selected}
-          data={selected}
-          onClose={() => setSelected(null)}
+          open={true} 
+          onClose={() => setSelected(null)} 
+          data={selected} 
+          onFinalize={finalizeAppointment} 
         />
       )}
 
@@ -59,6 +77,9 @@ export default function AppointmentTable({
         setFilterStatus={setFilterStatus}
         view={view}
         setView={setView}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+        onRefreshAppointments={onReload}
       />
 
       <div className="overflow-x-auto">
@@ -76,14 +97,14 @@ export default function AppointmentTable({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {data.length === 0 ? (
+            {sortedData.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-2 text-center text-gray-400">
                   Nenhum agendamento encontrado.
                 </td>
               </tr>
             ) : (
-              data.map((appointment, idx) => (
+              sortedData.map((appointment, idx) => (
                 <TableRow
                   key={appointment._id}
                   appointment={appointment}

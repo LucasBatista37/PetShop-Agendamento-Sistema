@@ -7,7 +7,6 @@ import CalendarComponent from "@/components/Appointments/CalendarComponent";
 import NewAppointmentModal from "@/components/Appointments/NewAppointmentModal/NewAppointmentModal";
 import ImportModal from "./ImportModal";
 import ExportModal from "./ExportModal";
-import ConfirmModal from "@/components/ui/ConfirmModal";
 import {
   fetchAppointments,
   createAppointment,
@@ -18,6 +17,7 @@ import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "../../utils/Toast";
 import { FaFileExport, FaFileImport, FaPlus } from "react-icons/fa";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { exportCSV, exportXLSX } from "@/utils/exportAppointments";
 
 const locales = { pt: ptLocale };
@@ -46,32 +46,49 @@ export default function Appointments() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [sortOrder, setSortOrder] = useState("desc");
 
   useEffect(() => {
     setLoading(true);
-    fetchAppointments({ page: currentPage, limit: rowsPerPage })
+    fetchAppointments({
+      page: currentPage,
+      limit: rowsPerPage,
+      search: search || undefined,
+      filterStatus: filterStatus !== "Todos" ? filterStatus : undefined,
+      filterScope: filterScope !== "all" ? filterScope : undefined,
+      sortOrder,
+    })
       .then((res) => {
         setAppointments(res.data.data || []);
         setTotalPages(res.data.totalPages);
         setTotalDocs(res.data.totalItems);
+        setSortOrder(res.data.sortOrder);
       })
       .catch(() => setError("Erro ao carregar agendamentos"))
       .finally(() => setLoading(false));
-  }, [currentPage, rowsPerPage]);
+  }, [currentPage, rowsPerPage, search, filterStatus, filterScope, sortOrder]);
 
   const patchStatus = (id, status) => {
     const appt = appointments.find((a) => a._id === id);
-    if (!appt) return;
-    updateAppointment(id, { ...appt, status })
+    if (!appt) return Promise.reject("Agendamento não encontrado");
+    return updateAppointment(id, { ...appt, status })
       .then((res) => {
         setAppointments((prev) =>
           prev.map((a) => (a._id === id ? res.data : a))
         );
         notifySuccess("Status atualizado com sucesso");
+        return res.data;
       })
-      .catch(() => notifyError("Erro ao atualizar status"));
+      .catch((err) => {
+        notifyError("Erro ao atualizar status");
+        throw err;
+      });
   };
-  const finalizeAppointment = (id) => patchStatus(id, "Finalizado");
+  const finalizeAppointment = async (id) => {
+    setAppointments((prev) =>
+      prev.map((a) => (a._id === id ? { ...a, status: "Finalizado" } : a))
+    );
+  };
 
   const handleSave = (data) => {
     if (modalData?._id) {
@@ -112,7 +129,7 @@ export default function Appointments() {
 
   const today = startOfDay(new Date());
   const filtered = useMemo(() => {
-    const base = appointments.filter((a) => {
+    return appointments.filter((a) => {
       if (filterScope === "future") {
         const dateObj = startOfDay(parseISO(a.date));
         if (dateObj < today) return false;
@@ -124,11 +141,6 @@ export default function Appointments() {
         a.ownerName.toLowerCase().includes(term) ||
         a.date.includes(term)
       );
-    });
-    return base.sort((a, b) => {
-      const dtA = new Date(`${a.date}T${a.time}`);
-      const dtB = new Date(`${b.date}T${b.time}`);
-      return dtA - dtB;
     });
   }, [appointments, filterScope, filterStatus, search, today]);
 
@@ -206,6 +218,8 @@ export default function Appointments() {
             setSearch={setSearch}
             filterStatus={filterStatus}
             setFilterStatus={setFilterStatus}
+            sortOrder={sortOrder}
+            setSortOrder={setSortOrder}
             view={view}
             setView={setView}
             currentPage={currentPage}
