@@ -56,8 +56,25 @@ export const logoutUser = async () => {
 };
 
 export const fetchDashboardStats = () => api.get("/dashboard/stats");
-export const fetchAppointments = async ({ page = 1, limit = 10 }) => {
-  return api.get(`/appointments?page=${page}&limit=${limit}`);
+
+export const fetchAppointments = async ({
+  page = 1,
+  limit = 10,
+  search,
+  filterStatus,
+  filterScope,
+  sortOrder,
+}) => {
+  return api.get("/appointments", {
+    params: {
+      page,
+      limit,
+      search,
+      filterStatus,
+      filterScope,
+      sortOrder,
+    },
+  });
 };
 
 export const createAppointment = (data) =>
@@ -94,6 +111,9 @@ export const updateAppointment = (id, data) =>
   });
 
 export const deleteAppointment = (id) => api.delete(`/appointments/${id}`);
+
+export const updateSortPreference = (sortOrder) =>
+  api.put("/appointments/sort-preference", { sortOrder });
 
 export const fetchServices = () => api.get("/services");
 

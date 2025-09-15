@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "@/utils/Toast";
 import api, { setAuthToken } from "@/api/api";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function AccountSettings() {
   const navigate = useNavigate();
@@ -18,6 +19,9 @@ export default function AccountSettings() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -79,20 +83,17 @@ export default function AccountSettings() {
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      !window.confirm(
-        "Tem certeza que deseja excluir sua conta? Esta ação é irreversível."
-      )
-    )
-      return;
-    setLoading(true);
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
     try {
       await api.delete("/auth/me");
       notifySuccess("Conta excluída com sucesso");
       navigate("/login", { replace: true });
     } catch (err) {
       notifyError(err.response?.data?.message || "Erro ao excluir conta");
+    } finally {
+      setDeleting(false);
+      setConfirmModalOpen(false);
     }
   };
 
@@ -167,74 +168,63 @@ export default function AccountSettings() {
           Alterar Senha
         </h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-600">
-              Senha Atual
-            </label>
-            <input
-              type={showCurrent ? "text" : "password"}
-              value={passwords.current}
-              onChange={(e) =>
-                setPasswords((p) => ({ ...p, current: e.target.value }))
-              }
-              placeholder="Digite sua senha atual"
-              className="mt-1 w-full border rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <button
-              type="button"
-              onClick={() => setShowCurrent((v) => !v)}
-              className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-              aria-label={showCurrent ? "Esconder senha" : "Mostrar senha"}
+          {["current", "new", "confirm"].map((type, idx) => (
+            <div
+              key={type}
+              className={`relative ${
+                type === "confirm" ? "md:col-span-2" : ""
+              }`}
             >
-              {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-600">
-              Nova Senha
-            </label>
-            <input
-              type={showNew ? "text" : "password"}
-              value={passwords.new}
-              onChange={(e) =>
-                setPasswords((p) => ({ ...p, new: e.target.value }))
-              }
-              placeholder="Digite a nova senha"
-              className="mt-1 w-full border rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <button
-              type="button"
-              onClick={() => setShowNew((v) => !v)}
-              className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-              aria-label={showNew ? "Esconder senha" : "Mostrar senha"}
-            >
-              {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
-
-          <div className="relative md:col-span-2">
-            <label className="block text-sm font-medium text-gray-600">
-              Confirmar Nova Senha
-            </label>
-            <input
-              type={showConfirm ? "text" : "password"}
-              value={passwords.confirm}
-              onChange={(e) =>
-                setPasswords((p) => ({ ...p, confirm: e.target.value }))
-              }
-              placeholder="Confirme a nova senha"
-              className="mt-1 w-full border rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirm((v) => !v)}
-              className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-              aria-label={showConfirm ? "Esconder senha" : "Mostrar senha"}
-            >
-              {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
+              <label className="block text-sm font-medium text-gray-600">
+                {type === "current"
+                  ? "Senha Atual"
+                  : type === "new"
+                  ? "Nova Senha"
+                  : "Confirmar Nova Senha"}
+              </label>
+              <input
+                type={
+                  (type === "current" && showCurrent) ||
+                  (type === "new" && showNew) ||
+                  (type === "confirm" && showConfirm)
+                    ? "text"
+                    : "password"
+                }
+                value={passwords[type]}
+                onChange={(e) =>
+                  setPasswords((p) => ({ ...p, [type]: e.target.value }))
+                }
+                placeholder={
+                  type === "current"
+                    ? "Digite sua senha atual"
+                    : type === "new"
+                    ? "Digite a nova senha"
+                    : "Confirme a nova senha"
+                }
+                className="mt-1 w-full border rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  type === "current"
+                    ? setShowCurrent((v) => !v)
+                    : type === "new"
+                    ? setShowNew((v) => !v)
+                    : setShowConfirm((v) => !v)
+                }
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                aria-label="Mostrar/Esconder senha"
+              >
+                {(type === "current" && showCurrent) ||
+                (type === "new" && showNew) ||
+                (type === "confirm" && showConfirm) ? (
+                  <EyeOff size={16} />
+                ) : (
+                  <Eye size={16} />
+                )}
+              </button>
+            </div>
+          ))}
         </div>
 
         <p className="text-sm text-gray-600 mt-2">
@@ -260,12 +250,23 @@ export default function AccountSettings() {
           Esta ação é permanente e apagará todos os seus dados.
         </p>
         <button
-          onClick={handleDelete}
+          onClick={() => setConfirmModalOpen(true)}
           className="bg-red-600 px-6 py-2 text-white rounded-md hover:bg-red-700 transition"
         >
           Excluir Conta
         </button>
       </section>
+
+      <ConfirmModal
+        isOpen={confirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
+        onConfirm={handleDeleteAccount}
+        title="Excluir Conta"
+        message="Tem certeza que deseja excluir sua conta? Esta ação é irreversível."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        loading={deleting}
+      />
     </div>
   );
 }

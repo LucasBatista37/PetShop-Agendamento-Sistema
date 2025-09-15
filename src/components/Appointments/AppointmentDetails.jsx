@@ -35,26 +35,14 @@ export default function AppointmentDetails({
       text: "text-blue-600",
       label: "Confirmado",
     },
-    Pendente: {
-      bg: "bg-amber-100",
-      text: "text-amber-600",
-      label: "Pendente",
-    },
-    Cancelado: {
-      bg: "bg-rose-100",
-      text: "text-rose-600",
-      label: "Cancelado",
-    },
+    Pendente: { bg: "bg-amber-100", text: "text-amber-600", label: "Pendente" },
+    Cancelado: { bg: "bg-rose-100", text: "text-rose-600", label: "Cancelado" },
     Finalizado: {
       bg: "bg-emerald-100",
       text: "text-emerald-600",
       label: "Finalizado",
     },
-  }[status] || {
-    bg: "bg-gray-100",
-    text: "text-gray-600",
-    label: status,
-  };
+  }[status] || { bg: "bg-gray-100", text: "text-gray-600", label: status };
 
   const formatDate = (iso) => {
     try {
@@ -156,9 +144,16 @@ export default function AppointmentDetails({
           </a>
 
           <button
-            onClick={() => {
-              onFinalize(_id);
-              onClose();
+            onClick={async () => {
+              try {
+                if (onFinalize) {
+                  await onFinalize(_id); 
+                }
+                onClose();
+              } catch (err) {
+                console.error(err);
+                alert("Erro ao finalizar agendamento");
+              }
             }}
             className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 flex items-center justify-center gap-2 text-sm sm:text-base"
           >
