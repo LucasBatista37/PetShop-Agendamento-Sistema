@@ -5,6 +5,7 @@ import AddServiceModal from "./AddServiceModal";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { fetchServices, deleteService, updateService } from "@/api/api";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import StatusMessage from "../../utils/StatusMessage";
 
 export default function ServicesConfig() {
   const [services, setServices] = useState([]);
@@ -66,8 +67,16 @@ export default function ServicesConfig() {
     setServices((prev) => [newService, ...prev]);
   };
 
-  if (loading) return <p className="p-6">Carregando...</p>;
-  if (error) return <p className="p-6 text-red-600">{error}</p>;
+  if (loading || error) {
+    return (
+      <StatusMessage
+        loading={loading}
+        error={error}
+        loadingMessage="Carregando serviços..."
+        className="p-6"
+      />
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">

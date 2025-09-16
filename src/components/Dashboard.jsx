@@ -6,10 +6,12 @@ import AppointmentsList from "./Dashboard/Card/AppointmentsList";
 import ServiceBarChart from "./Dashboard/Chart/ServiceBarChart";
 import StatusPieChart from "./Dashboard/Chart/StatusPieChart";
 import { fetchDashboardStats } from "@/api/api";
+import StatusMessage from "../utils/StatusMessage";
 
 export default function DashboardAgendamentos() {
   const [date, setDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     allAppointments: [],
     last7Days: [],
@@ -24,6 +26,7 @@ export default function DashboardAgendamentos() {
         setStats(res.data);
       } catch (err) {
         console.error("Erro ao carregar dashboard:", err);
+        setError("Erro ao carregar dados do dashboard."); 
       } finally {
         setLoading(false);
       }
@@ -31,9 +34,14 @@ export default function DashboardAgendamentos() {
     loadStats();
   }, []);
 
-  if (loading) {
+  if (loading || error) {
     return (
-      <p className="p-6 text-gray-500 text-center">Carregando dashboard...</p>
+      <StatusMessage
+        loading={loading}
+        error={error}
+        loadingMessage="Carregando dashboard..."
+        className="p-6"
+      />
     );
   }
 
