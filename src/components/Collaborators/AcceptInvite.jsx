@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { FaUser, FaEnvelope, FaPhoneAlt, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhoneAlt,
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
 import Modal from "@/components/Modal";
 import { acceptInvite } from "@/api/api";
 import { notifySuccess, notifyError } from "@/utils/Toast";
@@ -70,7 +77,13 @@ export default function AcceptInvite() {
       notifySuccess("Convite aceito! Agora você pode fazer login.");
       navigate("/login");
     } catch (err) {
-      notifyError(err.response?.data?.message || "Erro ao aceitar convite.");
+      const backendError =
+        err.response?.data?.message ||
+        (err.response?.data?.errors && err.response.data.errors[0]?.msg) ||
+        "Erro ao aceitar convite.";
+
+      setError(backendError); 
+      notifyError(backendError);
     } finally {
       setLoading(false);
     }

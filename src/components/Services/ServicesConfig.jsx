@@ -6,6 +6,9 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 import { fetchServices, deleteService, updateService } from "@/api/api";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import StatusMessage from "../../utils/StatusMessage";
+import { notifySuccess, notifyError } from "@/utils/Toast";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ServicesConfig() {
   const [services, setServices] = useState([]);
@@ -21,7 +24,10 @@ export default function ServicesConfig() {
   useEffect(() => {
     fetchServices()
       .then((res) => setServices(res.data))
-      .catch(() => setError("Erro ao carregar serviços"))
+      .catch(() => {
+        setError("Erro ao carregar serviços");
+        notifyError("Erro ao carregar serviços");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -38,8 +44,10 @@ export default function ServicesConfig() {
       setServices((prev) => prev.filter((s) => s._id !== serviceToDelete._id));
       setConfirmModalOpen(false);
       setServiceToDelete(null);
+      notifySuccess("Serviço excluído com sucesso");
     } catch (err) {
-      alert("Erro ao excluir serviço");
+      console.error(err);
+      notifyError(err.response?.data?.message || "Erro ao excluir serviço");
     } finally {
       setDeleting(false);
     }
@@ -53,6 +61,7 @@ export default function ServicesConfig() {
         prev.map((s) => (s._id === updated._id ? res.data : s))
       );
       setEditData(null);
+      notifySuccess("Serviço atualizado com sucesso");
     } catch (err) {
       console.error(err);
       const errorMsg =
@@ -60,11 +69,13 @@ export default function ServicesConfig() {
         err.response?.data?.message ||
         "Erro ao atualizar serviço";
       setEditError(errorMsg);
+      notifyError(errorMsg);
     }
   };
 
   const handleAddService = (newService) => {
     setServices((prev) => [newService, ...prev]);
+    notifySuccess("Serviço adicionado com sucesso");
   };
 
   if (loading || error) {
@@ -80,6 +91,9 @@ export default function ServicesConfig() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      {/* ToastContainer necessário */}
+      <ToastContainer />
+
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-semibold text-gray-800">Serviços</h1>
         <PrimaryButton
