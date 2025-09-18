@@ -5,7 +5,6 @@ import { dateFnsLocalizer } from "react-big-calendar";
 import { AppointmentTable } from "@/components/Appointments";
 import CalendarComponent from "@/components/Appointments/CalendarComponent";
 import NewAppointmentModal from "@/components/Appointments/NewAppointmentModal/NewAppointmentModal";
-import ImportModal from "./ImportModal";
 import ExportModal from "./ExportModal";
 import {
   fetchAppointments,
@@ -184,14 +183,6 @@ export default function Appointments() {
             </h1>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <PrimaryButton
-                onClick={() => setImportModalOpen(true)}
-                icon={FaFileImport}
-                color="blue-600"
-              >
-                Importar
-              </PrimaryButton>
-
-              <PrimaryButton
                 onClick={() => setExportModalOpen(true)}
                 icon={FaFileExport}
                 color="green-600"
@@ -267,11 +258,6 @@ export default function Appointments() {
             </div>
           </div>
         )}
-
-        <ImportModal
-          isOpen={importModalOpen}
-          onClose={() => setImportModalOpen(false)}
-        />
         <ExportModal
           isOpen={exportModalOpen}
           onClose={() => setExportModalOpen(false)}
