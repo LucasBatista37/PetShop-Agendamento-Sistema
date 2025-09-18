@@ -5,7 +5,6 @@ import { dateFnsLocalizer } from "react-big-calendar";
 import { AppointmentTable } from "@/components/Appointments";
 import CalendarComponent from "@/components/Appointments/CalendarComponent";
 import NewAppointmentModal from "@/components/Appointments/NewAppointmentModal/NewAppointmentModal";
-import ImportModal from "./ImportModal";
 import ExportModal from "./ExportModal";
 import {
   fetchAppointments,
@@ -19,6 +18,7 @@ import { FaFileExport, FaFileImport, FaPlus } from "react-icons/fa";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { exportCSV, exportXLSX } from "@/utils/exportAppointments";
+import StatusMessage from "../../utils/StatusMessage";
 
 const locales = { pt: ptLocale };
 const localizer = dateFnsLocalizer({
@@ -162,9 +162,16 @@ export default function Appointments() {
     [appointments]
   );
 
-  if (loading)
-    return <p className="p-4 text-gray-500 text-center">Carregando...</p>;
-  if (error) return <p className="p-4 text-red-600 text-center">{error}</p>;
+  if (loading || error) {
+    return (
+      <StatusMessage
+        loading={loading}
+        error={error}
+        loadingMessage="Carregando agendamentos..."
+        className="p-4"
+      />
+    );
+  }
 
   return (
     <>
@@ -175,14 +182,6 @@ export default function Appointments() {
               Gerenciamento de Agendamentos
             </h1>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <PrimaryButton
-                onClick={() => setImportModalOpen(true)}
-                icon={FaFileImport}
-                color="blue-600"
-              >
-                Importar
-              </PrimaryButton>
-
               <PrimaryButton
                 onClick={() => setExportModalOpen(true)}
                 icon={FaFileExport}
@@ -259,11 +258,6 @@ export default function Appointments() {
             </div>
           </div>
         )}
-
-        <ImportModal
-          isOpen={importModalOpen}
-          onClose={() => setImportModalOpen(false)}
-        />
         <ExportModal
           isOpen={exportModalOpen}
           onClose={() => setExportModalOpen(false)}

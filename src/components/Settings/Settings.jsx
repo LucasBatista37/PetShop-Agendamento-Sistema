@@ -5,6 +5,7 @@ import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "@/utils/Toast";
 import api, { setAuthToken } from "@/api/api";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import StatusMessage from "../../utils/StatusMessage";
 
 export default function AccountSettings() {
   const navigate = useNavigate();
@@ -99,9 +100,11 @@ export default function AccountSettings() {
 
   if (loading) {
     return (
-      <p className="p-6 text-gray-500 text-center">
-        Carregando configurações...
-      </p>
+      <StatusMessage
+        loading
+        loadingMessage="Carregando configurações..."
+        className="p-6"
+      />
     );
   }
 

@@ -11,11 +11,16 @@ import {
   inviteCollaborator,
   deleteCollaborator,
 } from "@/api/api";
+import StatusMessage from "../../utils/StatusMessage";
 
 const mapUserForUI = (u) => {
   const isVerified = !!u.isVerified;
   const pendingInvitation = !!u.pendingInvitation;
-  const status = pendingInvitation ? "Pendente" : isVerified ? "Ativo" : "Inativo";
+  const status = pendingInvitation
+    ? "Pendente"
+    : isVerified
+    ? "Ativo"
+    : "Inativo";
 
   return {
     _id: u._id,
@@ -84,16 +89,19 @@ export default function Collaborators() {
 
       if (res?.data?.invite) {
         const invite = res.data.invite;
-        setCollaborators((prev) => [mapUserForUI({
-          _id: invite._id || `inv_${Date.now()}`,
-          name: invite.name || "",
-          email: invite.email,
-          department: invite.department,
-          role: "collaborator",
-          inviteAcceptedAt: null,
-          isVerified: false,
-          pendingInvitation: true,
-        }), ...prev]);
+        setCollaborators((prev) => [
+          mapUserForUI({
+            _id: invite._id || `inv_${Date.now()}`,
+            name: invite.name || "",
+            email: invite.email,
+            department: invite.department,
+            role: "collaborator",
+            inviteAcceptedAt: null,
+            isVerified: false,
+            pendingInvitation: true,
+          }),
+          ...prev,
+        ]);
       } else {
         const temp = {
           _id: `inv_${Date.now()}`,
@@ -149,7 +157,7 @@ export default function Collaborators() {
       </header>
 
       {loading ? (
-        <p className="text-gray-600">Carregando colaboradores...</p>
+        <StatusMessage loading loadingMessage="Carregando colaboradores..." />
       ) : (
         <>
           <CollaboratorPanel
@@ -159,7 +167,7 @@ export default function Collaborators() {
             setView={setView}
             data={paginatedData}
             onDelete={handleDelete}
-            rowsPerPage={rowsPerPage} 
+            rowsPerPage={rowsPerPage}
             setRowsPerPage={setRowsPerPage}
             currentPage={currentPage}
             totalPages={totalPages}

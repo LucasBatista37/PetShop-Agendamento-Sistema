@@ -161,13 +161,4 @@ export const createCheckoutSession = async (priceId, customerEmail) => {
   }
 };
 
-export const importAppointments = async (file) => {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  return api.post("/appointments/upload", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-};
-
 export default api;
