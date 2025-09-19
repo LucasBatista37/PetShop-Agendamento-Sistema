@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import api, { setAuthToken } from "@/api/api";
 
-const AuthContext = createContext(); 
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -16,9 +16,25 @@ export const AuthProvider = ({ children }) => {
         .then((res) => {
           setUser(res.data.user);
         })
-        .catch(() => {
-          setUser(null);
-          setAuthToken(null);
+        .catch(async () => {
+          try {
+            const res = await api.post(
+              "/auth/refresh",
+              {},
+              { withCredentials: true }
+            );
+            const newToken = res.data.accessToken;
+
+            localStorage.setItem("token", newToken);
+            setAuthToken(newToken);
+
+            const me = await api.get("/auth/me");
+            setUser(me.data.user);
+          } catch {
+            setUser(null);
+            setAuthToken(null);
+            localStorage.removeItem("token");
+          }
         })
         .finally(() => setLoading(false));
     } else {

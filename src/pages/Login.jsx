@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api, { setAuthToken } from "@/api/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,12 +6,14 @@ import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { setUser } = useAuth(); 
+  const { setUser } = useAuth();
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
+  const [cooldown, setCooldown] = useState(0); 
+  const cooldownInterval = useRef(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,14 +42,49 @@ export default function Login() {
     }
   };
 
+  const startCooldown = (seconds) => {
+    setCooldown(seconds);
+    if (cooldownInterval.current) clearInterval(cooldownInterval.current);
+
+    cooldownInterval.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(cooldownInterval.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
   const handleResend = async () => {
+    if (!form.email) {
+      setError("Preencha o e-mail para reenviar a verificação.");
+      return;
+    }
+
     try {
-      await api.post("/auth/resend-verification", { email: form.email });
-      alert("E-mail de verificação reenviado. Verifique sua caixa de entrada.");
-    } catch {
-      alert("Erro ao reenviar e-mail.");
+      const res = await api.post("/auth/resend-verification", {
+        email: form.email,
+      });
+      alert(res.data.message);
+      setError("");
+    } catch (err) {
+      const resp = err.response?.data;
+      if (err.response?.status === 429 && resp?.retryAt) {
+        const secondsLeft = Math.ceil((resp.retryAt - Date.now()) / 1000);
+        startCooldown(secondsLeft);
+      } else {
+        setError(resp?.message || "Erro ao reenviar e-mail.");
+      }
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (cooldownInterval.current) clearInterval(cooldownInterval.current);
+    };
+  }, []);
 
   return (
     <>
@@ -90,7 +127,7 @@ export default function Login() {
           <div className="relative">
             <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
-              type={showPassword ? "text" : "password"} 
+              type={showPassword ? "text" : "password"}
               name="password"
               value={form.password}
               onChange={handleChange}
@@ -124,9 +161,16 @@ export default function Login() {
       {error.includes("não verificado") && (
         <button
           onClick={handleResend}
-          className="mt-4 w-full text-center text-indigo-600 hover:underline"
+          disabled={cooldown > 0}
+          className={`mt-4 w-full text-center rounded-lg py-2 font-medium transition ${
+            cooldown > 0
+              ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+              : "bg-indigo-600 text-white hover:bg-indigo-700"
+          }`}
         >
-          Reenviar e-mail de verificação
+          {cooldown > 0
+            ? `Reenviar e-mail em ${cooldown}s`
+            : "Reenviar e-mail de verificação"}
         </button>
       )}
 
