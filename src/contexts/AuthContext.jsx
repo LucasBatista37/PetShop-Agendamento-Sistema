@@ -8,44 +8,61 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setAuthToken(token);
-      api
-        .get("/auth/me")
-        .then((res) => {
-          setUser(res.data.user);
-        })
-        .catch(async () => {
+    const bootstrapAuth = async () => {
+      console.log("[Auth] Iniciando bootstrapAuth...");
+      try {
+        let token = localStorage.getItem("token");
+
+        if (!token) {
+          console.log("[Auth] Nenhum token no localStorage → tentando refresh");
           try {
             const res = await api.post(
               "/auth/refresh",
               {},
               { withCredentials: true }
             );
-            const newToken = res.data.accessToken;
-
-            localStorage.setItem("token", newToken);
-            setAuthToken(newToken);
-
-            const me = await api.get("/auth/me");
-            setUser(me.data.user);
-          } catch {
+            token = res.data.accessToken;
+            localStorage.setItem("token", token);
+            setAuthToken(token);
+          } catch (err) {
+            console.warn(
+              "[Auth] Refresh falhou (usuário provavelmente deslogado):",
+              err.response?.status
+            );
             setUser(null);
             setAuthToken(null);
             localStorage.removeItem("token");
+            setLoading(false);
+            return; // sai cedo
           }
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+        } else {
+          console.log("[Auth] Token encontrado no localStorage");
+          setAuthToken(token);
+        }
+
+        // só chega aqui se tiver accessToken válido
+        const me = await api.get("/auth/me");
+        console.log("[Auth] /auth/me OK:", me.data);
+        setUser(me.data.user);
+      } catch (err) {
+        console.error("[Auth] Falha no bootstrapAuth:", err);
+        setUser(null);
+        setAuthToken(null);
+        localStorage.removeItem("token");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    bootstrapAuth();
   }, []);
 
   const logout = async () => {
     await api.post("/auth/logout");
     setAuthToken(null);
     setUser(null);
+    localStorage.removeItem("token");
+    console.log("[Auth] Logout realizado");
   };
 
   return (
