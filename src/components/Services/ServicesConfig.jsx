@@ -91,7 +91,6 @@ export default function ServicesConfig() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      {/* ToastContainer necessário */}
       <ToastContainer />
 
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

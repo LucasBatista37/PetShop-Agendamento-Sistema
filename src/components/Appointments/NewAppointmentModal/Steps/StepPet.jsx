@@ -11,7 +11,7 @@ export default function StepPet({ data, onChange, errors = {} }) {
           value={data.name}
           onChange={(e) => onChange({ ...data, name: e.target.value })}
           placeholder="Nome do pet"
-          className="w-full border p-2 rounded"
+          className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         />
 
         <div className="grid grid-cols-2 gap-4">
@@ -22,7 +22,7 @@ export default function StepPet({ data, onChange, errors = {} }) {
             <select
               value={data.species}
               onChange={(e) => onChange({ ...data, species: e.target.value })}
-              className="border p-2 rounded w-full"
+              className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option>Cachorro</option>
               <option>Gato</option>
@@ -36,7 +36,7 @@ export default function StepPet({ data, onChange, errors = {} }) {
             <select
               value={data.size}
               onChange={(e) => onChange({ ...data, size: e.target.value })}
-              className="border p-2 rounded w-full"
+              className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="">Selecione</option>
               <option value="Pequeno">Pequeno</option>
@@ -50,7 +50,7 @@ export default function StepPet({ data, onChange, errors = {} }) {
           value={data.breed}
           onChange={(e) => onChange({ ...data, breed: e.target.value })}
           placeholder="Raça (opcional)"
-          className="w-full border p-2 rounded"
+          className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         />
 
         <textarea
@@ -58,7 +58,7 @@ export default function StepPet({ data, onChange, errors = {} }) {
           value={data.notes}
           onChange={(e) => onChange({ ...data, notes: e.target.value })}
           placeholder="Observações"
-          className="w-full border p-2 rounded"
+          className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
 
@@ -73,7 +73,7 @@ export default function StepPet({ data, onChange, errors = {} }) {
               value={data.ownerName || ""}
               onChange={(e) => onChange({ ...data, ownerName: e.target.value })}
               placeholder="Nome do dono"
-              className="border p-2 rounded w-full"
+              className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
           <div>
@@ -86,7 +86,7 @@ export default function StepPet({ data, onChange, errors = {} }) {
                 onChange({ ...data, ownerPhone: e.target.value })
               }
               placeholder="Telefone do dono"
-              className="border p-2 rounded w-full"
+              className="border p-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
         </div>
