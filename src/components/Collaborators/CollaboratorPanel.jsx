@@ -2,7 +2,7 @@ import React from "react";
 import CollaboratorFilters from "./CollaboratorFilters";
 import CardView from "./CardView";
 import ListView from "./ListView";
-import CollaboratorPagination from "./CollaboratorPagination";
+import Pagination from "../Pagination/Pagination";
 
 export default function CollaboratorPanel({
   search,
@@ -39,7 +39,7 @@ export default function CollaboratorPanel({
         )}
       </div>
 
-      <CollaboratorPagination
+      <Pagination
         rowsPerPage={rowsPerPage}
         setRowsPerPage={setRowsPerPage}
         currentPage={currentPage}

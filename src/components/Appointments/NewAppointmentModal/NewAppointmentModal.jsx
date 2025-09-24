@@ -68,10 +68,16 @@ export default function NewAppointmentModal({
     const dayAppts = appointments.filter(
       (a) => a.date.slice(0, 10) === formData.schedule.date
     );
-    const hours = Array.from(
-      { length: 10 },
-      (_, i) => `${String(9 + i).padStart(2, "0")}:00`
-    );
+
+    const hours = [];
+    for (let h = 0; h < 24; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const hour = String(h).padStart(2, "0");
+        const minute = String(m).padStart(2, "0");
+        hours.push(`${hour}:${minute}`);
+      }
+    }
+
     return hours.filter(
       (h) => dayAppts.filter((a) => a.time === h).length < MAX_PER_HOUR
     );
@@ -86,7 +92,7 @@ export default function NewAppointmentModal({
         "string.empty": "O nome do tutor é obrigatório.",
       }),
       ownerPhone: Joi.string()
-        .allow("") 
+        .allow("")
         .pattern(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/)
         .messages({
           "string.pattern.base": "Formato de telefone inválido.",
@@ -156,11 +162,11 @@ export default function NewAppointmentModal({
       breed: pet.breed.trim(),
       size: pet.size,
       notes: pet.notes.trim(),
-      baseService: service.base,
-      extraServices: service.extras,
-      date: schedule.date,
-      time: schedule.time,
-      status: initialData ? initialData.status : "Pendente",
+      baseService: service.base?._id || service.base || "", 
+      extraServices: (service.extras || []).map((s) => s._id || s),
+      date: schedule.date || "",
+      time: schedule.time || "",
+      status: initialData?._id ? initialData.status : "Pendente",
     };
   }
 

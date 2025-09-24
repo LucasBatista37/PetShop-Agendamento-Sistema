@@ -9,6 +9,32 @@ export default function Pagination({
   prevPage,
   nextPage,
 }) {
+  const getPageNumbers = () => {
+    const pages = [];
+    const visiblePages = 3;
+
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+
+      if (currentPage > visiblePages + 2) pages.push("...");
+
+      const start = Math.max(2, currentPage - visiblePages);
+      const end = Math.min(totalPages - 1, currentPage + visiblePages);
+
+      for (let i = start; i <= end; i++) pages.push(i);
+
+      if (currentPage < totalPages - visiblePages - 1) pages.push("...");
+
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
+
+  const pageNumbers = getPageNumbers();
+
   return (
     <div className="px-6 py-4 bg-gray-50 flex items-center justify-between">
       <div className="flex items-center space-x-2 text-sm text-gray-700">
@@ -42,14 +68,14 @@ export default function Pagination({
           &lt;
         </button>
 
-        {Array.from({ length: totalPages }, (_, i) => i + 1)
-          .slice(
-            Math.max(0, currentPage - 3),
-            Math.min(totalPages, currentPage + 2)
-          )
-          .map((page) => (
+        {pageNumbers.map((page, idx) =>
+          page === "..." ? (
+            <span key={`ellipsis-${idx}`} className="px-3 py-1 text-gray-400">
+              ...
+            </span>
+          ) : (
             <button
-              key={page}
+              key={`page-${page}-${idx}`}
               onClick={() => goToPage(page)}
               className={`px-3 py-1 rounded-md text-sm font-medium ${
                 page === currentPage
@@ -59,7 +85,8 @@ export default function Pagination({
             >
               {page}
             </button>
-          ))}
+          )
+        )}
 
         <button
           onClick={nextPage}

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import TableFilters from "./TableFilters";
-import Pagination from "./Pagination";
+import Pagination from "../../Pagination/Pagination";
 import TableRow from "./TableRow";
-import { parseISO, format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import AppointmentDetails from "../AppointmentDetails";
 
 export default function AppointmentTable({
@@ -59,10 +59,10 @@ export default function AppointmentTable({
     <div className="bg-white rounded-lg shadow overflow-hidden">
       {selected && (
         <AppointmentDetails
-          open={true} 
-          onClose={() => setSelected(null)} 
-          data={selected} 
-          onFinalize={finalizeAppointment} 
+          open={true}
+          onClose={() => setSelected(null)}
+          data={selected}
+          onFinalize={finalizeAppointment}
         />
       )}
 
@@ -151,7 +151,8 @@ export default function AppointmentTable({
                   Dono: {appointment.ownerName}
                 </div>
                 <div className="text-sm text-gray-600 mb-2">
-                  Data: {format(parseISO(appointment.date), "dd/MM/yyyy")} às{" "}
+                  Data:{" "}
+                  {formatInTimeZone(appointment.date, "UTC", "dd/MM/yyyy")} às{" "}
                   {appointment.time}
                 </div>
                 <div

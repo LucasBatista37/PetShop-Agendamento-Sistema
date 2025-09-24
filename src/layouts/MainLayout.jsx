@@ -18,16 +18,18 @@ export default function MainLayout() {
         className="flex-1 flex flex-col overflow-hidden relative z-10"
         onClick={handleBackgroundClick}
       >
-        <header className="md:hidden p-4 bg-gray-50 shadow">
+        <header className="md:hidden flex items-center justify-between p-4 bg-gray-50 shadow">
           <button
             onClick={(e) => {
               e.stopPropagation();
               setSidebarOpen(true);
             }}
-            className="text-gray-700"
+            className="text-gray-700 bg-indigo-100 p-2 rounded-md shadow hover:bg-indigo-200 transition"
           >
-            <FaBars className="w-5 h-5" />
+            <FaBars className="w-6 h-6" />
           </button>
+
+          <div className="text-xl font-bold text-indigo-600">PetCare</div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-6 bg-gray-50">

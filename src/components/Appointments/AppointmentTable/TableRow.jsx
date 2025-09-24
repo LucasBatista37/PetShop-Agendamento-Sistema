@@ -1,7 +1,7 @@
 import React from "react";
 import IconButton from "../IconButton";
 import { FaEye, FaEdit, FaTrash, FaEllipsisV } from "react-icons/fa";
-import { format, parseISO } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
 export default function TableRow({
   appointment,
@@ -75,7 +75,7 @@ export default function TableRow({
         </div>
       </td>
       <td className="px-4 py-2 text-sm text-gray-800 hidden sm:table-cell">
-        {format(parseISO(date), "dd/MM/yyyy")} às {time}
+        {formatInTimeZone(date, "UTC", "dd/MM/yyyy")} às {time}
       </td>
       <td className="px-4 py-2 text-sm text-gray-800 hidden lg:table-cell">
         {price ? `R$ ${price}` : "—"}
@@ -140,5 +140,3 @@ export default function TableRow({
     </tr>
   );
 }
-
-
