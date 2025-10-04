@@ -9,12 +9,10 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const bootstrapAuth = async () => {
-      console.log("[Auth] Iniciando bootstrapAuth...");
       try {
         let token = localStorage.getItem("token");
 
         if (!token) {
-          console.log("[Auth] Nenhum token no localStorage → tentando refresh");
           try {
             const res = await api.post(
               "/auth/refresh",
@@ -33,19 +31,16 @@ export const AuthProvider = ({ children }) => {
             setAuthToken(null);
             localStorage.removeItem("token");
             setLoading(false);
-            return; // sai cedo
+            return; 
           }
         } else {
           console.log("[Auth] Token encontrado no localStorage");
           setAuthToken(token);
         }
 
-        // só chega aqui se tiver accessToken válido
         const me = await api.get("/auth/me");
-        console.log("[Auth] /auth/me OK:", me.data);
         setUser(me.data.user);
       } catch (err) {
-        console.error("[Auth] Falha no bootstrapAuth:", err);
         setUser(null);
         setAuthToken(null);
         localStorage.removeItem("token");

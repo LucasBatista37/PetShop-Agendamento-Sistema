@@ -14,7 +14,7 @@ import {
 } from "@/api/api";
 import { ToastContainer } from "react-toastify";
 import { notifySuccess, notifyError } from "../../utils/Toast";
-import { FaFileExport, FaFileImport, FaPlus } from "react-icons/fa";
+import { FaFileExport, FaPlus } from "react-icons/fa";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { exportCSV, exportXLSX } from "@/utils/exportAppointments";
@@ -44,7 +44,6 @@ export default function Appointments() {
   const [filterStatus, setFilterStatus] = useState("Todos");
   const [modalData, setModalData] = useState(null);
   const [exportModalOpen, setExportModalOpen] = useState(false);
-  const [importModalOpen, setImportModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [sortOrder, setSortOrder] = useState("desc");
 
