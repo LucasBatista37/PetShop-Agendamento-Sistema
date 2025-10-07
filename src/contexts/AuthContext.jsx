@@ -34,7 +34,6 @@ export const AuthProvider = ({ children }) => {
             return; 
           }
         } else {
-          console.log("[Auth] Token encontrado no localStorage");
           setAuthToken(token);
         }
 

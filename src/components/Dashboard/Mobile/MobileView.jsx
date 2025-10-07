@@ -3,7 +3,8 @@ import MonthYearFilter from "../Filters/MonthYearFilter";
 import VisionTabs from "./VisionTabs";
 import StatCard from "@/components/ui/StatCard";
 import WeeklyCalendar from "@/components/Dashboard/Calendar/WeeklyCalendar";
-import AppointmentsList from "@/components/Dashboard/Card/AppointmentsList";
+import MonthlyCalendar from "@/components/Dashboard/Calendar/MonthlyCalendar";
+import AppointmentsListMobileCards from "@/components/Dashboard/Card/AppointmentsListMobileCards";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiList,
@@ -19,114 +20,13 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  PieChart,
-  Pie,
-  Cell,
-  Label,
 } from "recharts";
 import { isSameDay } from "date-fns";
-
-const FALLBACK_COLORS = ["#10B981", "#F59E0B", "#EF4444", "#6366F1", "#60A5FA"];
-
-function DonutChart({ title, data = [], total }) {
-  const hasData = total > 0;
-  const displayData = hasData
-    ? data.map((d, i) => ({
-      ...d,
-      color: d.color || FALLBACK_COLORS[i % FALLBACK_COLORS.length],
-    }))
-    : [{ name: "Sem dados", value: 1, color: "#E5E7EB" }];
-
-  return (
-    <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      {title && (
-        <h3 className="text-base font-semibold text-gray-800 mb-4 text-center">
-          {title}
-        </h3>
-      )}
-
-      <div className="flex items-center justify-center">
-        <div className="w-[220px] h-[220px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={displayData}
-                dataKey="value"
-                nameKey="name"
-                innerRadius={72}
-                outerRadius={96}
-                startAngle={90}
-                endAngle={-270}
-                paddingAngle={4}
-                cornerRadius={8}
-                isAnimationActive
-              >
-                {displayData.map((entry, idx) => (
-                  <Cell key={`cell-${idx}`} fill={entry.color} />
-                ))}
-
-                <Label
-                  content={({ viewBox }) => {
-                    const { cx, cy } = viewBox;
-                    if (cx == null || cy == null) return null;
-                    return (
-                      <>
-                        <text
-                          x={cx}
-                          y={cy - 10}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          fontSize="12"
-                          fill="#6B7280"
-                        >
-                          Total
-                        </text>
-                        <text
-                          x={cx}
-                          y={cy + 10}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          fontSize="20"
-                          fontWeight="600"
-                          fill="#111827"
-                        >
-                          {new Intl.NumberFormat("pt-BR").format(total)}
-                        </text>
-                      </>
-                    );
-                  }}
-                  position="center"
-                />
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2 justify-center">
-        {hasData
-          ? displayData.map((d) => (
-              <span
-                key={d.name}
-                className="inline-flex items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 text-sm text-gray-700"
-              >
-                <span
-                  className="inline-block w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: d.color }}
-                />
-                {d.name}
-              </span>
-            ))
-          : (
-            <span className="text-sm text-gray-500">Sem dados para o período</span>
-          )}
-      </div>
-    </section>
-  );
-}
+import DonutChart from "../Chart/DonutChart";
 
 export default function MobileView({ stats, date, setDate }) {
   const [view, setView] = useState("dashboard");
+  const [calMode, setCalMode] = useState("weekly"); 
 
   const now = new Date();
   const [monthYear, setMonthYear] = useState({
@@ -136,7 +36,6 @@ export default function MobileView({ stats, date, setDate }) {
 
   const getRawDateField = (a) =>
     a?.date ?? a?.datetime ?? a?.startDate ?? a?.start ?? a?.createdAt ?? null;
-
   const normalizeApptDay = (raw) => {
     if (!raw) return null;
     if (raw instanceof Date)
@@ -181,9 +80,8 @@ export default function MobileView({ stats, date, setDate }) {
   useEffect(() => {
     const m = date.getMonth();
     const y = date.getFullYear();
-    if (m !== monthYear.month || y !== monthYear.year) {
+    if (m !== monthYear.month || y !== monthYear.year)
       setMonthYear({ month: m, year: y });
-    }
   }, [date]); 
 
   const statusCountsFiltered = useMemo(() => {
@@ -245,10 +143,12 @@ export default function MobileView({ stats, date, setDate }) {
               {view === "dashboard" ? "Dashboard" : "Agendamentos"}
             </h1>
           </div>
-
-          <MonthYearFilter value={monthYear} onChange={setMonthYear} align="end" />
+          <MonthYearFilter
+            value={monthYear}
+            onChange={setMonthYear}
+            align="end"
+          />
         </div>
-
         <VisionTabs view={view} onChange={setView} />
       </div>
 
@@ -302,7 +202,11 @@ export default function MobileView({ stats, date, setDate }) {
                       <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                       <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#7C3AED" radius={[6, 6, 0, 0]} />
+                      <Bar
+                        dataKey="count"
+                        fill="#7C3AED"
+                        radius={[6, 6, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -313,17 +217,43 @@ export default function MobileView({ stats, date, setDate }) {
           {view === "bookings" && (
             <motion.div key="mobile-bookings" {...motionProps}>
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 mb-3">
-                <WeeklyCalendar date={date} setDate={setDate} compact />
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-700">
+                    Calendário
+                  </h3>
+                  <div className="inline-flex p-1 bg-gray-100 rounded-lg">
+                    {["weekly", "monthly"].map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => setCalMode(m)}
+                        className={[
+                          "px-3 py-1.5 rounded-md text-xs font-medium transition",
+                          calMode === m
+                            ? "bg-white shadow text-gray-900"
+                            : "text-gray-600",
+                        ].join(" ")}
+                      >
+                        {m === "weekly" ? "Semanal" : "Mensal"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {calMode === "weekly" ? (
+                  <WeeklyCalendar date={date} setDate={setDate} />
+                ) : (
+                  <MonthlyCalendar
+                    date={date}
+                    setDate={setDate}
+                    appointments={stats?.allAppointments || []}
+                  />
+                )}
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                  Agendamentos do Dia
-                </h3>
-                <AppointmentsList
+              <div className="bg-transparent">
+                <AppointmentsListMobileCards
                   date={date}
-                  appointments={dailyAppointments}
-                  mobile
+                  appointments={stats?.allAppointments || []}
                 />
               </div>
             </motion.div>
