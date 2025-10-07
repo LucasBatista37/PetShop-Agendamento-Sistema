@@ -4,7 +4,6 @@ import "./index.css";
 import { Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
-import Dashboard from "./components/Dashboard";
 import Appointments from "./components/Appointments/Appointments";
 import AddServiceModal from "./components/Services/AddServiceModal";
 import ServicesConfig from "./components/Services/ServicesConfig";
@@ -22,6 +21,7 @@ import HelpDetail from "./components/Help/HelpDetails";
 import Collaborators from "./components/Collaborators";
 import AcceptInvite from "./components/Collaborators/AcceptInvite";
 import PrivateRoute from "./components/PrivateRoute";
+import DashboardAgendamentos from "./components/DashboardAgendamentos";
 
 const StripeSuccess = () => (
   <div className="p-6 text-center">
@@ -60,7 +60,7 @@ function App() {
             </PrivateRoute>
           }
         >
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<DashboardAgendamentos />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/services" element={<ServicesConfig />} />
           <Route path="/services/new" element={<AddServiceModal />} />
