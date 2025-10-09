@@ -1,18 +1,12 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import MonthYearFilter from "../Filters/MonthYearFilter";
 import VisionTabs from "./VisionTabs";
 import StatCard from "@/components/ui/StatCard";
 import WeeklyCalendar from "@/components/Dashboard/Calendar/WeeklyCalendar";
 import MonthlyCalendar from "@/components/Dashboard/Calendar/MonthlyCalendar";
-import AppointmentsListMobileCards from "@/components/Dashboard/Card/AppointmentsListMobileCards";
+import AppointmentsList from "@/components/Dashboard/Card/AppointmentsList";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FiList,
-  FiCheckCircle,
-  FiClock,
-  FiXCircle,
-  FiPlus,
-} from "react-icons/fi";
+import { FiList, FiClock, FiPlus, FiDollarSign } from "react-icons/fi";
 import {
   ResponsiveContainer,
   BarChart,
@@ -21,12 +15,45 @@ import {
   YAxis,
   Tooltip,
 } from "recharts";
-import { isSameDay } from "date-fns";
 import DonutChart from "../Chart/DonutChart";
 
-export default function MobileView({ stats, date, setDate }) {
+const getRawDateField = (a) =>
+  a?.date ?? a?.datetime ?? a?.startDate ?? a?.start ?? a?.createdAt ?? null;
+
+const normalizeApptDay = (raw) => {
+  if (!raw) return null;
+  if (raw instanceof Date)
+    return new Date(raw.getFullYear(), raw.getMonth(), raw.getDate());
+  if (typeof raw === "number") {
+    const d = new Date(raw);
+    return isNaN(d)
+      ? null
+      : new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  if (typeof raw === "string") {
+    const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    const d = new Date(raw);
+    return isNaN(d)
+      ? null
+      : new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  return null;
+};
+
+const formatBRL = (n) =>
+  typeof n === "number"
+    ? new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+      }).format(n)
+    : "—";
+
+const toMonth0 = (m) => (m > 11 ? m - 1 : m);
+
+export default function MobileView({ stats, date, setDate, reloadStats }) {
   const [view, setView] = useState("dashboard");
-  const [calMode, setCalMode] = useState("weekly"); 
+  const [calMode, setCalMode] = useState("weekly");
 
   const now = new Date();
   const [monthYear, setMonthYear] = useState({
@@ -34,97 +61,84 @@ export default function MobileView({ stats, date, setDate }) {
     year: now.getFullYear(),
   });
 
-  const getRawDateField = (a) =>
-    a?.date ?? a?.datetime ?? a?.startDate ?? a?.start ?? a?.createdAt ?? null;
-  const normalizeApptDay = (raw) => {
-    if (!raw) return null;
-    if (raw instanceof Date)
-      return new Date(raw.getFullYear(), raw.getMonth(), raw.getDate());
-    if (typeof raw === "number") {
-      const d = new Date(raw);
-      return isNaN(d)
-        ? null
-        : new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    }
-    if (typeof raw === "string") {
-      const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
-      if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
-      const d = new Date(raw);
-      return isNaN(d)
-        ? null
-        : new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    }
-    return null;
-  };
-
-  const filteredAppointments = useMemo(() => {
-    const list = stats?.allAppointments || [];
-    return list.filter((a) => {
-      const d = normalizeApptDay(getRawDateField(a));
-      return (
-        d &&
-        d.getMonth() === monthYear.month &&
-        d.getFullYear() === monthYear.year
-      );
-    });
-  }, [stats?.allAppointments, monthYear]);
-
-  const dailyAppointments = useMemo(() => {
-    const list = stats?.allAppointments || [];
-    return list.filter((a) => {
-      const d = normalizeApptDay(getRawDateField(a));
-      return d && isSameDay(d, date);
-    });
-  }, [stats?.allAppointments, date]);
+  const reloadRef = useRef(reloadStats);
+  useEffect(() => {
+    reloadRef.current = reloadStats;
+  }, [reloadStats]);
 
   useEffect(() => {
     const m = date.getMonth();
     const y = date.getFullYear();
-    if (m !== monthYear.month || y !== monthYear.year)
+    if (m !== monthYear.month || y !== monthYear.year) {
       setMonthYear({ month: m, year: y });
-  }, [date]); 
-
-  const statusCountsFiltered = useMemo(() => {
-    const map = { Concluído: 0, Cancelado: 0, Pendente: 0 };
-    for (const a of filteredAppointments) {
-      const s = a.status || a.situacao || a.state || "Pendente";
-      if (map[s] != null) map[s] += 1;
     }
-    return [
-      { status: "Concluído", count: map["Concluído"] },
-      { status: "Cancelado", count: map["Cancelado"] },
-      { status: "Pendente", count: map["Pendente"] },
-    ];
-  }, [filteredAppointments]);
+  }, [date]);
+
+  useEffect(() => {
+    const applied = stats?.appliedFilter;
+    if (
+      applied &&
+      applied.month0 === monthYear.month &&
+      applied.year === monthYear.year
+    ) {
+      return;
+    }
+    reloadRef.current?.(
+      { month: monthYear.month + 1, year: monthYear.year },
+      { silent: true }
+    );
+  }, [monthYear.month, monthYear.year]);
+
+  const allAppointments = stats?.allAppointments || [];
+  const statusCounts = stats?.statusCounts || [];
+  const byDayInMonth = stats?.byDayInMonth || null;
+
+  const getCount = (label) =>
+    statusCounts.find((s) => s.status === label)?.count || 0;
+
+  const total =
+    typeof stats?.totalAppointments === "number"
+      ? stats.totalAppointments
+      : allAppointments.length;
+
+  const concluidos = getCount("Concluído");
+  const confirmados = getCount("Confirmado");
+  const cancelados = getCount("Cancelado");
+  const pendentes = getCount("Pendente");
+
+  const donutData = useMemo(
+    () => [
+      { name: "Confirmado", value: confirmados, color: "#6366F1" },
+      { name: "Concluído", value: concluidos, color: "#10B981" },
+      { name: "Pendente", value: pendentes, color: "#F59E0B" },
+      { name: "Cancelado", value: cancelados, color: "#EF4444" },
+    ],
+    [confirmados, concluidos, pendentes, cancelados]
+  );
 
   const monthDaysSeries = useMemo(() => {
+    if (byDayInMonth && byDayInMonth.length) return byDayInMonth;
     const days = new Date(monthYear.year, monthYear.month + 1, 0).getDate();
     const arr = Array.from({ length: days }, (_, i) => ({
       day: String(i + 1).padStart(2, "0"),
       count: 0,
     }));
-    for (const a of filteredAppointments) {
+    for (const a of allAppointments) {
       const d = normalizeApptDay(getRawDateField(a));
-      if (d) arr[d.getDate() - 1].count += 1;
+      if (
+        d &&
+        d.getMonth() === monthYear.month &&
+        d.getFullYear() === monthYear.year
+      ) {
+        arr[d.getDate() - 1].count += 1;
+      }
     }
     return arr;
-  }, [filteredAppointments, monthYear]);
+  }, [byDayInMonth, allAppointments, monthYear]);
 
-  const total = filteredAppointments.length;
-  const concluidos =
-    statusCountsFiltered.find((s) => s.status === "Concluído")?.count || 0;
-  const cancelados =
-    statusCountsFiltered.find((s) => s.status === "Cancelado")?.count || 0;
-  const pendentes =
-    statusCountsFiltered.find((s) => s.status === "Pendente")?.count || 0;
-
-  const donutData = useMemo(
-    () => [
-      { name: "Concluído", value: concluidos, color: "#10B981" },
-      { name: "Pendente", value: pendentes, color: "#F59E0B" },
-      { name: "Cancelado", value: cancelados, color: "#EF4444" },
-    ],
-    [concluidos, pendentes, cancelados]
+  const hasEventsInMonth = useMemo(
+    () => (monthDaysSeries || []).some((d) => d.count > 0),
+    [monthDaysSeries]
   );
 
   const motionProps = {
@@ -143,12 +157,19 @@ export default function MobileView({ stats, date, setDate }) {
               {view === "dashboard" ? "Dashboard" : "Agendamentos"}
             </h1>
           </div>
+
           <MonthYearFilter
             value={monthYear}
-            onChange={setMonthYear}
+            onChange={(v) =>
+              setMonthYear({
+                month: toMonth0(v.month),
+                year: v.year,
+              })
+            }
             align="end"
           />
         </div>
+
         <VisionTabs view={view} onChange={setView} />
       </div>
 
@@ -158,28 +179,32 @@ export default function MobileView({ stats, date, setDate }) {
             <motion.div key="mobile-dash" {...motionProps}>
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <StatCard
+                  icon={<FiDollarSign className="text-green-500" />}
+                  label="Receita total"
+                  value={formatBRL(stats?.totalRevenue)}
+                  color="green"
+                />
+                <StatCard
                   icon={<FiList className="text-indigo-500" />}
-                  label="Total"
-                  value={total}
+                  label="Agendamentos"
+                  value={
+                    typeof stats?.totalAppointments === "number"
+                      ? stats.totalAppointments
+                      : total
+                  }
                   color="indigo"
                 />
                 <StatCard
-                  icon={<FiCheckCircle className="text-green-500" />}
-                  label="Concluídos"
-                  value={concluidos}
-                  color="green"
+                  icon={<FiClock className="text-red-500" />}
+                  label="Horário de pico"
+                  value={stats?.peakHour || "—"}
+                  color="red"
                 />
                 <StatCard
                   icon={<FiClock className="text-yellow-500" />}
                   label="Pendentes"
                   value={pendentes}
                   color="yellow"
-                />
-                <StatCard
-                  icon={<FiXCircle className="text-red-500" />}
-                  label="Cancelados"
-                  value={cancelados}
-                  color="red"
                 />
               </div>
 
@@ -196,7 +221,15 @@ export default function MobileView({ stats, date, setDate }) {
                     "0"
                   )}/${monthYear.year}`}
                 </h2>
-                <div className="h-48">
+
+                <div className="h-48 relative">
+                  {!hasEventsInMonth && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <p className="text-xs text-gray-500">
+                        Sem agendamentos neste mês.
+                      </p>
+                    </div>
+                  )}
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={monthDaysSeries || []}>
                       <XAxis dataKey="day" tick={{ fontSize: 11 }} />
@@ -245,15 +278,16 @@ export default function MobileView({ stats, date, setDate }) {
                   <MonthlyCalendar
                     date={date}
                     setDate={setDate}
-                    appointments={stats?.allAppointments || []}
+                    appointments={allAppointments}
                   />
                 )}
               </div>
 
               <div className="bg-transparent">
-                <AppointmentsListMobileCards
+                <AppointmentsList
                   date={date}
-                  appointments={stats?.allAppointments || []}
+                  appointments={allAppointments}
+                  isMobile
                 />
               </div>
             </motion.div>

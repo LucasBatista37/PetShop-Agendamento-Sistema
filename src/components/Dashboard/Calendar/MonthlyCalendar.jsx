@@ -5,7 +5,6 @@ import {
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-// helpers para normalizar a data (ignora fuso)
 function getRawDateField(a) {
   return a?.date ?? a?.datetime ?? a?.startDate ?? a?.start ?? a?.createdAt ?? null;
 }
@@ -26,15 +25,13 @@ function normalizeApptDay(raw) {
 }
 
 export default function MonthlyCalendar({ date, setDate, appointments = [] }) {
-  // mês em visualização (navegação independente do dia selecionado)
   const [viewMonth, setViewMonth] = useState(date);
 
   useEffect(() => {
-    // se mudou externamente, acompanha
     if (date.getMonth() !== viewMonth.getMonth() || date.getFullYear() !== viewMonth.getFullYear()) {
       setViewMonth(date);
     }
-  }, [date]); // eslint-disable-line
+  }, [date]); 
 
   const daysGrid = useMemo(() => {
     const monthStart = startOfMonth(viewMonth);
@@ -51,13 +48,12 @@ export default function MonthlyCalendar({ date, setDate, appointments = [] }) {
     return days;
   }, [viewMonth]);
 
-  // mapa de contagem de agendamentos por dia (para os pontinhos)
   const countByDay = useMemo(() => {
     const map = new Map();
     for (const a of appointments) {
       const d = normalizeApptDay(getRawDateField(a));
       if (!d) continue;
-      const key = d.toDateString(); // chave local
+      const key = d.toDateString(); 
       map.set(key, (map.get(key) || 0) + 1);
     }
     return map;
@@ -118,9 +114,7 @@ export default function MonthlyCalendar({ date, setDate, appointments = [] }) {
               aria-label={format(d, "PPP", { locale: ptBR })}
             >
               <span className="leading-none">{format(d, "d")}</span>
-              {/* hoje com aro sutil */}
               {today && !selected && <span className="mt-0.5 block w-1.5 h-1.5 rounded-full bg-indigo-400/60" />}
-              {/* pontinho de agendamento */}
               {hasAppts && <span className="mt-0.5 block w-1.5 h-1.5 rounded-full bg-emerald-500" />}
             </button>
           );

@@ -9,8 +9,6 @@ import {
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-const ITEMS_PER_PAGE = 3;
-
 const WeeklyCalendar = ({ date, setDate }) => {
   const [start, setStart] = useState(startOfWeek(date, { weekStartsOn: 1 }));
 

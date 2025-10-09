@@ -55,7 +55,8 @@ export const logoutUser = async () => {
   }
 };
 
-export const fetchDashboardStats = () => api.get("/dashboard/stats");
+export const fetchDashboardStats = (params) =>
+  api.get("/dashboard/stats", { params });
 
 export const fetchAppointments = async ({
   page = 1,
