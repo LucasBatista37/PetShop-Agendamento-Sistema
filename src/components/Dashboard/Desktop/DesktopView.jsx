@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import Last7DaysChart from "@/components/Dashboard/Chart/Last7DaysChart";
 import ServiceBarChart from "@/components/Dashboard/Chart/ServiceBarChart";
 import DonutChart from "@/components/Dashboard/Chart/DonutChart";
+import ServicesDonutChart from "@/components/Dashboard/Chart/ServicesDonutChart";
 import WeeklyCalendar from "@/components/Dashboard/Calendar/WeeklyCalendar";
 import AppointmentsList from "@/components/Dashboard/Card/AppointmentsList";
 import PetImageCard from "@/components/Dashboard/Card/PetImageCard";
+import DonutHeader from "@/components/Dashboard/Chart/DonutHeader";
 
 function statusColor(status) {
   const s = (status || "").toLowerCase();
@@ -16,11 +18,51 @@ function statusColor(status) {
 }
 
 export default function DesktopView({ stats, date, setDate }) {
-  const donutData = (stats.statusCounts || []).map((item) => ({
-    name: item.status,
-    value: item.count,
-    color: statusColor(item.status),
-  }));
+  const [donutMode, setDonutMode] = useState("status"); 
+
+  const donutStatusData = useMemo(
+    () =>
+      (stats.statusCounts || []).map((item) => ({
+        name: item.status,
+        value: item.count,
+        color: statusColor(item.status),
+      })),
+    [stats.statusCounts]
+  );
+
+  const statusTotal = useMemo(
+    () => donutStatusData.reduce((acc, d) => acc + (Number(d.value) || 0), 0),
+    [donutStatusData]
+  );
+
+  const donutServicesData = useMemo(
+    () =>
+      (stats.services || [])
+        .map((item, i) => ({
+          name: item.name ?? item.label ?? item.service ?? `Serviço ${i + 1}`,
+          value: Number(item.count ?? item.value ?? item.total ?? 0),
+        }))
+        .sort((a, b) => b.value - a.value),
+    [stats.services]
+  );
+
+  const servicesTotal = useMemo(
+    () => donutServicesData.reduce((acc, d) => acc + (Number(d.value) || 0), 0),
+    [donutServicesData]
+  );
+
+  const headerNode = (
+    <DonutHeader
+      mode={donutMode}
+      onChange={setDonutMode}
+      modes={["status", "services"]}
+      titles={{
+        status: "Status dos agendamentos",
+        services: "Distribuição por serviços",
+      }}
+      className="mb-2"
+    />
+  );
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
@@ -49,13 +91,27 @@ export default function DesktopView({ stats, date, setDate }) {
               }))}
             />
 
-            <DonutChart
-              title="Status dos agendamentos"
-              data={donutData}
-              compact
-              legendPlacement="left"
-              titleClassName="text-lg md:text-xl lg:text-2xl font-semibold text-gray-800 text-center"
-            />
+            {donutMode === "status" ? (
+              <DonutChart
+                title="" 
+                header={headerNode} 
+                data={donutStatusData}
+                total={statusTotal}
+                legendPlacement="below"
+                titleClassName="text-lg md:text-xl lg:text-2xl font-semibold text-gray-800 text-center"
+              />
+            ) : (
+              <ServicesDonutChart
+                title=""
+                header={headerNode}
+                data={donutServicesData}
+                total={servicesTotal}
+                centerLabel="serviços"
+                legendPlacement="below" 
+                percentPrecision={0}
+                titleClassName="text-lg md:text-xl lg:text-2xl font-semibold text-gray-800 text-center"
+              />
+            )}
           </div>
         </div>
 
